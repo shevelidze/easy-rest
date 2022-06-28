@@ -11,12 +11,15 @@
         "/dist"
     ],
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "test": "jest",
         "build": "tsc"
     },
     "author": "shevelidze",
     "license": "MIT",
     "devDependencies": {
+        "@types/jest": "^28.1.1",
+        "jest": "^28.1.1",
+        "ts-jest": "^28.0.5",
         "typescript": "^4.7.4"
     },
     "dependencies": {}

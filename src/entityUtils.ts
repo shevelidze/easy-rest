@@ -41,10 +41,15 @@ export function createInternalEntity(
   for (const memberKey in entity.members) {
     const entityMember = entity.members[memberKey];
 
-    if (entityMember.isPrimitive && entityMember.typeName)
-      result.include[memberKey] = entityMember.isPrimitive
-        ? true
-        : entities[entityMember.typeName].include;
+    if (
+      entityMember.isPrimitive &&
+      !['string', 'number', 'boolean'].includes(entityMember.typeName)
+    )
+      throw new Error(`Invalid primitive type ${entityMember.typeName}.`);
+
+    result.include[memberKey] = entityMember.isPrimitive
+      ? true
+      : entities[entityMember.typeName].include;
 
     result.lightInclude[memberKey] = entityMember.isExcludedFromLight
       ? false
