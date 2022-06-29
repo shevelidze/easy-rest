@@ -25,5 +25,4 @@ export default interface Entity {
   fetcher: Fetcher;
   mutator?: Mutator;
   deleter?: Deleter;
-  idExistenceChecker: IdExistenceChecker;
 }

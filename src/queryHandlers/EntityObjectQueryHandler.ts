@@ -5,6 +5,7 @@ import {
   NoMutatorFunctionProvidedError,
   InvalidRequestPathError,
   MemeberOrMethodNotFoundError,
+  MethodNotAllowedError,
 } from '../errors';
 import type EntitiesData from '../EntitiesData';
 
@@ -42,12 +43,27 @@ export default class EntityObjectQueryHandler implements QueryHandler {
       if (query.length === 0) throw new InvalidRequestPathError();
 
       if (query[0] in this.entity.methods) {
-        return new ApiResult(200, this.entity.methods[query[0]].func(body));
+        if (httpMethod !== 'POST')
+          throw new MethodNotAllowedError(
+            'For methods calling only POST requests are being accepted.'
+          );
+
+        return new ApiResult(
+          200,
+          this.entity.methods[query[0]].func(this.id, body)
+        );
       } else if (query[0] in this.entity.members) {
         const entityMemberName = query[0];
         const entityMember = this.entity.members[entityMemberName];
 
         if (entityMember.isPrimitive) {
+          if (query.length > 1) throw new InvalidRequestPathError();
+          else if (httpMethod === 'POST')
+            throw new MethodNotAllowedError(
+              `Use POST /entities/${this.entity.name}/${query[0]} for changing value of ${query[0]}.`
+            );
+          else if (httpMethod !== 'GET') throw new MethodNotAllowedError();
+
           return new ApiResult(
             200,
             this.entity.fetcher({

@@ -75,3 +75,9 @@ export class MemeberOrMethodNotFoundError extends EasyRestError {
     );
   }
 }
+
+export class MethodNotAllowedError extends EasyRestError {
+  constructor(message?: string) {
+    super(message || 'Methods not allowed.', 405);
+  }
+}

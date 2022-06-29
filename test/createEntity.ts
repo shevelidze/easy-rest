@@ -3,8 +3,7 @@ import { InternalEntity } from '../src/entityUtils';
 export default function createEntity(o?: any) {
   const result: InternalEntity = {
     name: 'empty',
-    fetcher: async () => {},
-    idExistenceChecker: async () => true,
+    fetcher: async ({ ids }) => `fetch for ids ${ids?.join(', ')}`,
     methods: {},
     members: {},
     include: {},

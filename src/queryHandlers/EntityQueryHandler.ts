@@ -18,7 +18,7 @@ export default class EntityQueryHandler implements QueryHandler {
     if (httpMethod === 'GET' && query.length === 0)
       return new ApiResult(
         200,
-        this.entity.fetcher({ ids: [], include: this.entity.include })
+        await this.entity.fetcher({ include: this.entity.lightInclude })
       );
     else if (httpMethod === 'PUT' && query.length === 0) {
       if (this.entity.creator === undefined)
@@ -28,9 +28,6 @@ export default class EntityQueryHandler implements QueryHandler {
 
       return new ApiResult(201);
     } else {
-      if (!this.entity.idExistenceChecker(query[0]))
-        throw new InvalidEntityIdError(query[0], this.entity.name);
-
       return new EntityObjectQueryHandler(
         query[0],
         this.entity,

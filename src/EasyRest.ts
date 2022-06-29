@@ -7,6 +7,7 @@ import {
   ApiResult,
 } from './queryHandlers';
 import type EntitiesData from './EntitiesData';
+import { MethodNotAllowedError } from './errors';
 
 export default class EasyRest {
   constructor(entities: Entity[]) {
@@ -37,6 +38,14 @@ export default class EasyRest {
     httpMethod: string,
     bodyObject: any
   ): Promise<ApiResult> {
+    const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'];
+    if (!allowedMethods.includes(httpMethod))
+      throw new MethodNotAllowedError(
+        `The Api doesn\'t accept ${httpMethod}. Please, use ${allowedMethods.join(
+          ', '
+        )}.`
+      );
+
     let currentQueryHandler = this.intialQueryHandler;
 
     while (query.length > 0) {
