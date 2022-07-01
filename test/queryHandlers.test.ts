@@ -119,8 +119,7 @@ describe('Query handlers', () => {
   describe('Entity object handler', () => {
     test('throw error on no mutator provided', async () => {
       const entityObjectHandler = new EntityObjectQueryHandler(
-        '123',
-        entitiesData.entities.company,
+        { id: '123', entity: entitiesData.entities.company },
         entitiesData
       );
       await expect(

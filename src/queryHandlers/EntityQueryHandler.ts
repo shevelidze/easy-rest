@@ -29,8 +29,10 @@ export default class EntityQueryHandler implements QueryHandler {
       return new ApiResult(201);
     } else {
       return new EntityObjectQueryHandler(
-        query[0],
-        this.entity,
+        {
+          id: query[0],
+          entity: this.entity,
+        },
         this.entitiesData
       );
     }

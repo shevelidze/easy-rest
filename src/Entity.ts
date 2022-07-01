@@ -5,7 +5,6 @@ export interface Include {
   [key: string]: Include | boolean;
 }
 
-export type IdExistenceChecker = (id: string) => Promise<boolean>;
 export type Creator = (properties: { [key: string]: any }) => Promise<void>;
 export type Fetcher = (args: {
   ids?: string[];

@@ -8,11 +8,11 @@ import {
   MethodNotAllowedError,
 } from '../errors';
 import type EntitiesData from '../EntitiesData';
+import type EntityObject from '../EntityObject';
 
 export default class EntityObjectQueryHandler implements QueryHandler {
-  constructor(id: string, entity: InternalEntity, entitiesData: EntitiesData) {
-    this.id = id;
-    this.entity = entity;
+  constructor(entityObject: EntityObject, entitiesData: EntitiesData) {
+    this.entityObject = entityObject;
     this.entitiesData = entitiesData;
   }
   async handleQueryElement(query: string[], httpMethod: string, body: any) {
@@ -20,29 +20,29 @@ export default class EntityObjectQueryHandler implements QueryHandler {
     if (httpMethod === 'GET' && query.length === 0)
       return {
         code: 200,
-        body: this.entity.fetcher({
-          ids: [this.id],
-          include: this.entity.include,
+        body: this.entityObject.entity.fetcher({
+          ids: [this.entityObject.id],
+          include: this.entityObject.entity.include,
         }),
       };
     else if (httpMethod === 'POST' && query.length === 0) {
-      if (this.entity.mutator === undefined)
-        throw new NoMutatorFunctionProvidedError(this.entity.name);
+      if (this.entityObject.entity.mutator === undefined)
+        throw new NoMutatorFunctionProvidedError(this.entityObject.entity.name);
 
-      await this.entity.mutator(this.id, body);
+      await this.entityObject.entity.mutator(this.entityObject.id, body);
 
       return new ApiResult();
     } else if (httpMethod === 'DELETE' && query.length === 0) {
-      if (this.entity.deleter === undefined)
-        throw new NoDeleterFunctionProvidedError(this.entity.name);
+      if (this.entityObject.entity.deleter === undefined)
+        throw new NoDeleterFunctionProvidedError(this.entityObject.entity.name);
 
-      await this.entity.deleter(this.id);
+      await this.entityObject.entity.deleter(this.entityObject.id);
 
       return new ApiResult();
     } else {
       if (query.length === 0) throw new InvalidRequestPathError();
 
-      if (query[0] in this.entity.methods) {
+      if (query[0] in this.entityObject.entity.methods) {
         if (httpMethod !== 'POST')
           throw new MethodNotAllowedError(
             'For methods calling only POST requests are being accepted.'
@@ -50,46 +50,49 @@ export default class EntityObjectQueryHandler implements QueryHandler {
 
         return new ApiResult(
           200,
-          this.entity.methods[query[0]].func(this.id, body)
+          this.entityObject.entity.methods[query[0]].func(
+            this.entityObject.id,
+            body
+          )
         );
-      } else if (query[0] in this.entity.members) {
+      } else if (query[0] in this.entityObject.entity.members) {
         const entityMemberName = query[0];
-        const entityMember = this.entity.members[entityMemberName];
+        const entityMember = this.entityObject.entity.members[entityMemberName];
 
         if (entityMember.isPrimitive) {
           if (query.length > 1) throw new InvalidRequestPathError();
-          else if (httpMethod === 'POST')
-            throw new MethodNotAllowedError(
-              `Use POST /entities/${this.entity.name}/${query[0]} for changing value of ${query[0]}.`
-            );
           else if (httpMethod !== 'GET') throw new MethodNotAllowedError();
 
           return new ApiResult(
             200,
-            this.entity.fetcher({
-              ids: [this.id],
+            this.entityObject.entity.fetcher({
+              ids: [this.entityObject.id],
               include: { [entityMemberName]: true },
             })
           );
         } else {
           return new EntityObjectQueryHandler(
-            (
-              await this.entity.fetcher({
-                ids: [this.id],
-                include: { [entityMemberName]: { id: true } },
-              })
-            )[entityMemberName].id,
-            this.entitiesData.entities[entityMember.typeName],
+            {
+              id: (
+                await this.entityObject.entity.fetcher({
+                  ids: [this.entityObject.id],
+                  include: { [entityMemberName]: { id: true } },
+                })
+              )[entityMemberName].id,
+              entity: this.entitiesData.entities[entityMember.typeName],
+            },
             this.entitiesData
           );
         }
       }
 
-      throw new MemeberOrMethodNotFoundError(this.entity.name, query[0]);
+      throw new MemeberOrMethodNotFoundError(
+        this.entityObject.entity.name,
+        query[0]
+      );
     }
   }
 
-  id: string;
-  entity: InternalEntity;
+  entityObject: EntityObject;
   entitiesData: EntitiesData;
 }
