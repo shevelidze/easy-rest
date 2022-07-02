@@ -1,7 +1,7 @@
 import { EntityQueryHandler } from './queryHandlers';
-import { InternalEntitesObject } from './entityUtils';
+import { EntitesObject } from './Entity';
 
 export default interface EntitiesData {
-  entities: InternalEntitesObject;
+  entities: EntitesObject;
   entityQueryHandlers: { [key: string]: EntityQueryHandler };
 }

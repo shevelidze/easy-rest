@@ -1,5 +1,5 @@
 import type Entity from './Entity';
-import { createInternalEntity, validateEntity } from './entityUtils';
+import InternalEntity from './InternalEntity';
 import {
   InitialQueryHandler,
   EntityQueryHandler,
@@ -19,8 +19,7 @@ export default class EasyRest {
     const entitesNames: string[] = entities.map((value) => value.name);
 
     for (const entity of entities) {
-      validateEntity(entity, entitesNames);
-      const internalEntity = createInternalEntity(
+      const internalEntity = new InternalEntity(
         entity,
         this.entitiesData.entities
       );
