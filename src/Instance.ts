@@ -1,5 +1,5 @@
-import type Entity from './Entity';
-import InternalEntity from './InternalEntity';
+import type EntityBlueprint from './EntityBlueprint';
+import Entity from './Entity';
 import {
   InitialQueryHandler,
   EntityQueryHandler,
@@ -9,33 +9,35 @@ import {
 import type EntitiesData from './EntitiesData';
 import { MethodNotAllowedError } from './errors';
 
-export default class EasyRest {
-  constructor(entities: Entity[]) {
+export default class Instance {
+  constructor(entitiesBlueprints: { [key: string]: EntityBlueprint }) {
     this.entitiesData = {
       entities: {},
       entityQueryHandlers: {},
     };
 
-    const entitesNames: string[] = entities.map((value) => value.name);
+    const entitesNames = new Set(Object.keys(entitiesBlueprints));
 
-    for (const entity of entities) {
-      const internalEntity = new InternalEntity(
-        entity,
-        this.entitiesData.entities
+    for (const entityName in entitiesBlueprints) {
+      const entity = new Entity(
+        entityName,
+        entitiesBlueprints[entityName],
+        this.entitiesData.entities,
+        entitesNames
       );
 
-      this.entitiesData.entities[entity.name] = internalEntity;
+      this.entitiesData.entities[entityName] = entity;
 
-      this.entitiesData.entityQueryHandlers[entity.name] =
-        new EntityQueryHandler(internalEntity, this.entitiesData);
+      this.entitiesData.entityQueryHandlers[entityName] =
+        new EntityQueryHandler(entity, this.entitiesData);
     }
 
-    this.intialQueryHandler = new InitialQueryHandler(this.entitiesData);
+    this.initialQueryHandler = new InitialQueryHandler(this.entitiesData);
   }
   async processQuery(
     query: string[],
     httpMethod: string,
-    bodyObject: any
+    bodyObject?: any
   ): Promise<ApiResult> {
     const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'];
     if (!allowedMethods.includes(httpMethod))
@@ -45,7 +47,7 @@ export default class EasyRest {
         )}.`
       );
 
-    let currentQueryHandler = this.intialQueryHandler;
+    let currentQueryHandler = this.initialQueryHandler;
 
     while (query.length > 0) {
       let handlerResult = await currentQueryHandler.handleQueryElement(
@@ -59,8 +61,7 @@ export default class EasyRest {
 
     return new ApiResult();
   }
-  addEntity(entity: Entity) {}
 
-  intialQueryHandler: QueryHandler;
+  initialQueryHandler: QueryHandler;
   entitiesData: EntitiesData;
 }

@@ -1,5 +1,5 @@
 import Entity from './Entity';
-import { Include } from './EntityData';
+import { Include } from './EntityBlueprint';
 
 export default class EntityObject {
   constructor(id: string, entity: Entity) {
@@ -10,9 +10,9 @@ export default class EntityObject {
     this.entity.fetch({ ids: [this.id], include });
   }
   fetchOneMember(memberName: string, memberInclude?: Include) {
-    if (this.entity.entityData.members[memberName] === undefined)
+    if (this.entity.entityBlueprint.members[memberName] === undefined)
       throw new Error(
-        `Entity ${this.entity.entityData.name} has no members with name ${memberName}.`
+        `Entity ${this.entity.name} has no members with name ${memberName}.`
       );
 
     return this.fetch({

@@ -1,5 +1,5 @@
-import { Mutate, type Include } from './EntityData';
-import type Entity from './EntityData';
+import { Mutate, type Include } from './EntityBlueprint';
+import type EntityBlueprint from './EntityBlueprint';
 import {
   NoCreatorFunctionProvidedError,
   NoMutatorFunctionProvidedError,
@@ -7,18 +7,24 @@ import {
 } from './errors';
 import { ArrayEntityMember, EntityMember } from './entityMembers';
 
-export default class InternalEntity {
-  constructor(entity: Entity, entities: EntitesObject) {
-    this.entityData = entity;
+export default class Entity {
+  constructor(
+    name: string,
+    entityBlueprint: EntityBlueprint,
+    entities: EntitesObject,
+    entitiesNames: Set<string>
+  ) {
+    this.entityBlueprint = entityBlueprint;
+    this.name = name;
     this.include = {};
     this.lightInclude = {};
 
     let isIdMemberProvided = false;
 
-    for (const memberKey in entity.members) {
-      const entityMember = entity.members[memberKey];
+    for (const memberKey in entityBlueprint.members) {
+      const entityMember = entityBlueprint.members[memberKey];
 
-      this.validateEntityMember(entityMember, entities);
+      this.validateEntityMember(entityMember, entitiesNames);
 
       if (memberKey === 'id') {
         if (entityMember.typeName !== 'string')
@@ -42,46 +48,44 @@ export default class InternalEntity {
       throw new Error('Each entity must have an id member.');
   }
   create(newObject: any) {
-    if (this.entityData.creator === undefined)
-      throw new NoCreatorFunctionProvidedError(this.entityData.name);
+    if (this.entityBlueprint.creator === undefined)
+      throw new NoCreatorFunctionProvidedError(this.name);
 
-    return this.entityData.creator(newObject);
+    return this.entityBlueprint.creator(newObject);
   }
   fetch(args: { ids?: string[]; include: Include }) {
-    return this.fetch(args);
+    return this.entityBlueprint.fetcher(args);
   }
   mutate(id: string, mutate: Mutate) {
-    if (this.entityData.mutator === undefined)
-      throw new NoMutatorFunctionProvidedError(this.entityData.name);
+    if (this.entityBlueprint.mutator === undefined)
+      throw new NoMutatorFunctionProvidedError(this.name);
 
-    return this.entityData.mutator(id, mutate);
+    return this.entityBlueprint.mutator(id, mutate);
   }
   delete(id: string) {
-    if (this.entityData.deleter === undefined)
-      throw new NoDeleterFunctionProvidedError(this.entityData.name);
+    if (this.entityBlueprint.deleter === undefined)
+      throw new NoDeleterFunctionProvidedError(this.name);
 
-    return this.entityData.deleter(id);
+    return this.entityBlueprint.deleter(id);
   }
-  validateEntityMember(entityMember: EntityMember, entities: EntitesObject) {
+  validateEntityMember(entityMember: EntityMember, entitiesNames: Set<string>) {
     if (entityMember.typeName === 'array') {
       const arrayEntityMember = entityMember as ArrayEntityMember;
       this.validateEntityMember(
         arrayEntityMember.elementEntityMember,
-        entities
+        entitiesNames
       );
-    } else if (
-      !entityMember.isPrimitive &&
-      entities[entityMember.typeName] === undefined
-    )
+    } else if (!entityMember.isPrimitive && !entitiesNames.has(entityMember.typeName))
       throw new Error(
         `Failed to find entity with a name ${entityMember.typeName}.`
       );
   }
   include: Include;
   lightInclude: Include;
-  entityData: Entity;
+  entityBlueprint: EntityBlueprint;
+  name: string;
 }
 
 export interface EntitesObject {
-  [key: string]: InternalEntity;
+  [key: string]: Entity;
 }

@@ -29,7 +29,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
     } else {
       if (query.length === 0) throw new InvalidRequestPathError();
 
-      if (query[0] in this.entityObject.entity.entityData.methods) {
+      if (query[0] in this.entityObject.entity.entityBlueprint.methods) {
         if (httpMethod !== 'POST')
           throw new MethodNotAllowedError(
             'For methods calling only POST requests are being accepted.'
@@ -38,15 +38,15 @@ export default class EntityObjectQueryHandler implements QueryHandler {
         //todo: add validation
         return new ApiResult(
           200,
-          this.entityObject.entity.entityData.methods[query[0]].func(
+          this.entityObject.entity.entityBlueprint.methods[query[0]].func(
             this.entityObject.id,
             body
           )
         );
-      } else if (query[0] in this.entityObject.entity.entityData.members) {
+      } else if (query[0] in this.entityObject.entity.entityBlueprint.members) {
         const entityMemberName = query[0];
         const entityMember =
-          this.entityObject.entity.entityData.members[entityMemberName];
+          this.entityObject.entity.entityBlueprint.members[entityMemberName];
 
         if (entityMember.isPrimitive) {
           if (entityMember.typeName === 'array')
@@ -68,7 +68,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
           } else if (httpMethod === 'POST') {
             if (!entityMember.isVariable)
               throw new TryingToVariateNotVariableMemberError(
-                this.entityObject.entity.entityData.name,
+                this.entityObject.entity.name,
                 entityMemberName
               );
 
@@ -94,7 +94,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
       }
 
       throw new MemeberOrMethodNotFoundError(
-        this.entityObject.entity.entityData.name,
+        this.entityObject.entity.name,
         query[0]
       );
     }

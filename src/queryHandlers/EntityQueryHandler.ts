@@ -1,11 +1,7 @@
 import QueryHandler, { ApiResult } from './QueryHandler';
-import {
-  InvalidEntityIdError,
-  NoCreatorFunctionProvidedError,
-} from '../errors';
 import EntityObjectQueryHandler from './EntityObjectQueryHandler';
 import type EntitiesData from '../EntitiesData';
-import InternalEntity from '../InternalEntity';
+import InternalEntity from '../Entity';
 import EntityObject from '../EntityObject';
 
 export default class EntityQueryHandler implements QueryHandler {

@@ -1,5 +1,4 @@
 import QueryHandler from './QueryHandler';
-import EntityQueryHandler from './EntityQueryHandler';
 import {
   EntitiesPrefixMissingError,
   InvalidEntityNameError,

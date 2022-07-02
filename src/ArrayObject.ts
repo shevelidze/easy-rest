@@ -1,7 +1,7 @@
-import { Entity } from '.';
 import EntitiesData from './EntitiesData';
-import { Include } from './EntityData';
-import { ArrayEntityMember, EntityMember } from './entityMembers';
+import Entity from './Entity';
+import { Include } from './EntityBlueprint';
+import { ArrayEntityMember } from './entityMembers';
 import EntityObject from './EntityObject';
 import { IndexIsNaNError, MemeberOrMethodNotFoundError } from './errors';
 
@@ -30,7 +30,7 @@ export default class ArrayObject {
     arrayElementsIds = this.fetch({ id: true });
     if (arrayElementsIds[elementIndex] === undefined)
       throw new MemeberOrMethodNotFoundError(
-        `${this.ownerEntityObject.entity.entityData.name}.${this.entityMemberName} array`,
+        `${this.ownerEntityObject.entity.name}.${this.entityMemberName} array`,
         index
       );
     return arrayElementsIds[elementIndex].id;
@@ -41,7 +41,7 @@ export default class ArrayObject {
     return indexNumber;
   }
   get entityMember() {
-    return this.ownerEntityObject.entity.entityData.members[
+    return this.ownerEntityObject.entity.entityBlueprint.members[
       this.entityMemberName
     ] as ArrayEntityMember;
   }
