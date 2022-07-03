@@ -7,7 +7,7 @@ import {
   ApiResult,
 } from './queryHandlers';
 import type EntitiesData from './EntitiesData';
-import { MethodNotAllowedError } from './errors';
+import { MethodNotAllowedError, NotFoundError } from './errors';
 
 export default class Instance {
   constructor(entitiesBlueprints: { [key: string]: EntityBlueprint }) {
@@ -16,20 +16,19 @@ export default class Instance {
       entityQueryHandlers: {},
     };
 
-    const entitesNames = new Set(Object.keys(entitiesBlueprints));
-
     for (const entityName in entitiesBlueprints) {
-      const entity = new Entity(
-        entityName,
-        entitiesBlueprints[entityName],
-        this.entitiesData.entities,
-        entitesNames
-      );
+      const entity = new Entity(entityName, entitiesBlueprints[entityName]);
 
       this.entitiesData.entities[entityName] = entity;
 
       this.entitiesData.entityQueryHandlers[entityName] =
         new EntityQueryHandler(entity, this.entitiesData);
+    }
+
+    for (const entityName in entitiesBlueprints) {
+      this.entitiesData.entities[entityName].initialize(
+        this.entitiesData.entities
+      );
     }
 
     this.initialQueryHandler = new InitialQueryHandler(this.entitiesData);
@@ -59,7 +58,7 @@ export default class Instance {
       currentQueryHandler = handlerResult;
     }
 
-    return new ApiResult();
+    throw new NotFoundError();
   }
 
   initialQueryHandler: QueryHandler;

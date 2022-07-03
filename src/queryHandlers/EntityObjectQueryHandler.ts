@@ -20,7 +20,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
     if (httpMethod === 'GET' && query.length === 0)
       return {
         code: 200,
-        body: this.entityObject.fetch(this.entityObject.entity.include),
+        body: await this.entityObject.fetch(this.entityObject.entity.include),
       };
     else if (httpMethod === 'POST' && query.length === 0) {
       return new ApiResult(200, await this.entityObject.mutate(body));
@@ -38,7 +38,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
         //todo: add validation
         return new ApiResult(
           200,
-          this.entityObject.entity.entityBlueprint.methods[query[0]].func(
+          await this.entityObject.entity.entityBlueprint.methods[query[0]].func(
             this.entityObject.id,
             body
           )
@@ -61,7 +61,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
           else if (query.length > 1) throw new InvalidRequestPathError();
           else if (httpMethod === 'GET') {
             return new ApiResult(200, {
-              value: this.entityObject.fetch({
+              value: await this.entityObject.fetch({
                 include: { [entityMemberName]: true },
               })[entityMemberName],
             });
@@ -73,7 +73,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
               );
 
             //todo: add validation
-            this.entityObject.entity.mutate(this.entityObject.id, body);
+            await this.entityObject.entity.mutate(this.entityObject.id, body);
             return new ApiResult();
           }
 

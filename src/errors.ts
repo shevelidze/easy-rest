@@ -21,7 +21,9 @@ export class NotFoundError extends EasyRestError {
 
 export class InvalidEntityIdError extends NotFoundError {
   constructor(id: string, entityName: string) {
-    super(`Failed to find object with ${id} of entity ${entityName}.`);
+    super(
+      `Failed to find object with the id ${id} of the entity ${entityName}.`
+    );
   }
 }
 

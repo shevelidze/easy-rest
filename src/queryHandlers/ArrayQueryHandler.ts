@@ -2,7 +2,11 @@ import ArrayObject from '../ArrayObject';
 import type QueryHandler from './QueryHandler';
 import { ApiResult } from './QueryHandler';
 import EntitiesData from '../EntitiesData';
-import { NotFoundError } from '../errors';
+import {
+  NotFoundError,
+  TryingToVariateNotVariableMemberError,
+  MemeberOrMethodNotFoundError,
+} from '../errors';
 import EntityObjectQueryHandler from './EntityObjectQueryHandler';
 import EntityObject from '../EntityObject';
 
@@ -15,7 +19,7 @@ export default class ArrayQueryHandler implements QueryHandler {
     query.shift();
     if (httpMethod === 'GET' && query.length === 0) {
       return new ApiResult(200, {
-        value: this.arrayObject.fetch(),
+        value: await this.arrayObject.fetch(),
       });
     } else if (
       httpMethod === 'GET' &&
@@ -23,7 +27,7 @@ export default class ArrayQueryHandler implements QueryHandler {
       query.length === 1
     ) {
       const indexNumber = this.arrayObject.parseIndex(query[0]);
-      return new ApiResult(200, this.arrayObject.fetch()[indexNumber]);
+      return new ApiResult(200, (await this.arrayObject.fetch())[indexNumber]);
     } else if (
       !this.arrayObject.elementEntityMember.isPrimitive &&
       query.length > 0
@@ -36,28 +40,36 @@ export default class ArrayQueryHandler implements QueryHandler {
         this.entitiesData
       );
     } else if (
-      httpMethod === 'PUT' &&
-      this.arrayObject.elementEntityMember.isPrimitive &&
-      query.length === 0
-    ) {
-      if (!this.arrayObject.entityMember.isVariable) {
-      }
-      const newArray = this.arrayObject.fetch();
-      newArray.push(body.value);
-      this.arrayObject.ownerEntityObject.mutate({
-        [this.arrayObject.entityMemberName]: newArray,
-      });
-    } else if (
-      httpMethod === 'DELETE' &&
+      (httpMethod === 'DELETE' || httpMethod === 'PUT') &&
       this.arrayObject.elementEntityMember.isPrimitive &&
       query.length === 1
     ) {
+      if (!this.arrayObject.entityMember.isVariable)
+        throw new TryingToVariateNotVariableMemberError(
+          this.arrayObject.ownerEntityObject.entity.name,
+          this.arrayObject.entityMemberName
+        );
+
       const indexNumber = this.arrayObject.parseIndex(query[0]);
-      const newArray = this.arrayObject.fetch();
-      newArray.splice(indexNumber, 1);
-      this.arrayObject.ownerEntityObject.mutate({
-        [this.arrayObject.entityMemberName]: newArray,
-      });
+      const newArray = await this.arrayObject.fetch();
+
+      if (httpMethod === 'DELETE') {
+        const deletedElements = newArray.splice(indexNumber, 1);
+        if (deletedElements.length === 0)
+          throw new MemeberOrMethodNotFoundError(
+            `${this.arrayObject.ownerEntityObject.entity.name}.${this.arrayObject.entityMemberName} array`,
+            query[0]
+          );
+
+        this.arrayObject.ownerEntityObject.mutate({
+          [this.arrayObject.entityMemberName]: newArray,
+        });
+      } else {
+        newArray.push(body.value);
+        this.arrayObject.ownerEntityObject.mutate({
+          [this.arrayObject.entityMemberName]: newArray,
+        });
+      }
     }
     throw new NotFoundError();
   }

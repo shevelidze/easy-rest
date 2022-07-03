@@ -7,7 +7,7 @@ export default class EntityObject {
     this.entity = entity;
   }
   fetch(include: Include) {
-    this.entity.fetch({ ids: [this.id], include });
+    return this.entity.fetch({ ids: [this.id], include });
   }
   fetchOneMember(memberName: string, memberInclude?: Include) {
     if (this.entity.entityBlueprint.members[memberName] === undefined)
@@ -20,10 +20,10 @@ export default class EntityObject {
     })[memberName];
   }
   delete() {
-    this.entity.delete(this.id);
+    return this.entity.delete(this.id);
   }
   mutate(mutate: any) {
-    this.entity.mutate(this.id, mutate);
+    return this.entity.mutate(this.id, mutate);
   }
 
   entity: Entity;
