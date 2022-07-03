@@ -1,5 +1,5 @@
 {
-  "name": "easy-rest",
+  "name": "@shevelidze/easyrest",
   "version": "0.1.0",
   "description": "A library for RESTing without headache.",
   "directories": {
@@ -12,13 +12,14 @@
   ],
   "scripts": {
     "test": "jest --verbose",
-    "build": "tsc"
+    "build": "tsc",
+    "bundle": "npm test && npm run build && npm publish --access=public"
   },
   "author": "shevelidze",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shevelidze/easy-rest.git"
+    "url": "https://github.com/shevelidze/easyrest.git"
   },
   "devDependencies": {
     "@types/jest": "^28.1.1",
