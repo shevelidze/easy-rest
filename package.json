@@ -1,14 +1,14 @@
 {
-  "name": "easyrest",
-  "version": "0.0.1",
-  "description": "A library for RESTing without tears",
+  "name": "easy-rest",
+  "version": "0.0.0",
+  "description": "A library for RESTing without headache.",
   "directories": {
     "test": "test"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "/dist"
+    "dist"
   ],
   "scripts": {
     "test": "jest --verbose",
@@ -16,6 +16,10 @@
   },
   "author": "shevelidze",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shevelidze/easy-rest.git"
+  },
   "devDependencies": {
     "@types/jest": "^28.1.1",
     "jest": "^28.1.1",
