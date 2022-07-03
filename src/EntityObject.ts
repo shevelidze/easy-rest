@@ -6,18 +6,20 @@ export default class EntityObject {
     this.id = id;
     this.entity = entity;
   }
-  fetch(include: Include) {
-    return this.entity.fetch({ ids: [this.id], include });
+  async fetch(include: Include) {
+    return (await this.entity.fetch({ ids: [this.id], include }))?.[0];
   }
-  fetchOneMember(memberName: string, memberInclude?: Include) {
+  async fetchOneMember(memberName: string, memberInclude?: Include) {
     if (this.entity.entityBlueprint.members[memberName] === undefined)
       throw new Error(
         `Entity ${this.entity.name} has no members with name ${memberName}.`
       );
 
-    return this.fetch({
-      [memberName]: memberInclude || this.entity.include[memberName],
-    })[memberName];
+    return (
+      await this.fetch({
+        [memberName]: memberInclude || this.entity.include[memberName],
+      })
+    )[memberName];
   }
   delete() {
     return this.entity.delete(this.id);

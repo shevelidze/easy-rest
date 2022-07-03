@@ -35,8 +35,14 @@ export class ArrayEntityMember extends PrimitiveEntityMember {
   constructor(elementEntityMember: EntityMember) {
     super('array');
     this.elementEntityMember = elementEntityMember;
+    this.isExcludedFromLight = elementEntityMember.isExcludedFromLight;
+  }
+  useLightElements(): ArrayEntityMember {
+    this.isUsingLightElements = true;
+    return this;
   }
   elementEntityMember: EntityMember;
+  isUsingLightElements: boolean = false;
 }
 
 export function string(): PrimitiveEntityMember {

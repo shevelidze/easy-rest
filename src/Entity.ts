@@ -54,7 +54,7 @@ export default class Entity {
     let isIdMemberProvided = false;
 
     for (const memberKey in this.entityBlueprint.members) {
-      const entityMember = this.entityBlueprint.members[memberKey];
+      let entityMember = this.entityBlueprint.members[memberKey];
 
       this.validateEntityMember(entityMember, entities);
 
@@ -65,9 +65,23 @@ export default class Entity {
         isIdMemberProvided = true;
       }
 
-      this.include[memberKey] = entityMember.isPrimitive
-        ? true
-        : entities[entityMember.typeName].include;
+      if (entityMember.typeName === 'array') {
+        const arrayEntityMember = entityMember as ArrayEntityMember;
+
+        this.include[memberKey] = arrayEntityMember.elementEntityMember
+          .isPrimitive
+          ? true
+          : arrayEntityMember.isUsingLightElements
+          ? entities[arrayEntityMember.elementEntityMember.typeName]
+              .lightInclude
+          : entities[arrayEntityMember.elementEntityMember.typeName].include;
+
+        entityMember = arrayEntityMember.elementEntityMember;
+      } else
+        this.include[memberKey] = entityMember.isPrimitive
+          ? true
+          : entities[entityMember.typeName].include;
+
 
       this.lightInclude[memberKey] = entityMember.isExcludedFromLight
         ? false

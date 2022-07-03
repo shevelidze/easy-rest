@@ -61,15 +61,17 @@ export default class ArrayQueryHandler implements QueryHandler {
             query[0]
           );
 
-        this.arrayObject.ownerEntityObject.mutate({
+        await this.arrayObject.ownerEntityObject.mutate({
           [this.arrayObject.entityMemberName]: newArray,
         });
       } else {
         newArray.push(body.value);
-        this.arrayObject.ownerEntityObject.mutate({
+        await this.arrayObject.ownerEntityObject.mutate({
           [this.arrayObject.entityMemberName]: newArray,
         });
       }
+
+      return new ApiResult();
     }
     throw new NotFoundError();
   }

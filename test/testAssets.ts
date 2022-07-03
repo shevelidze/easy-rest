@@ -1,51 +1,54 @@
 import EasyRest from '../src';
 
-interface Student {
+export interface Student {
   id: string;
   name: string;
   age: number;
 }
 
-interface Room {
+export interface Room {
   id: string;
   number: number;
   area: number;
 }
 
-interface Class {
+export interface Class {
   id: string;
   name: string;
   students: Student[];
 }
 
-interface Building {
+export interface Building {
   id: string;
   rooms: Room[];
   address: string;
 }
 
-interface Schole {
+export interface Schoole {
   id: string;
   building: Building;
   name: string;
   classes: Class[];
 }
 
-type Dict<T> = { [id: string]: T };
+export type Dict<T> = { [id: string]: T };
 
-const schools: Dict<Schole> = {};
-const buildings: Dict<Building> = {};
-const classes: Dict<Class> = {};
-const rooms: Dict<Room> = {};
-const students: Dict<Student> = {};
+export const schools: Dict<Schoole> = {};
+export const buildings: Dict<Building> = {};
+export const classes: Dict<Class> = {};
+export const rooms: Dict<Room> = {};
+export const students: Dict<Student> = {};
 
-function resetDicts() {
+export function resetDicts() {
   for (const dict of [schools, buildings, classes, rooms, students]) {
     for (const key in dict) delete dict[key];
   }
 }
 
-function applyInclude(object: any, include: EasyRest.Include) {
+export function applyInclude(object: any, include: EasyRest.Include) {
+  if (object instanceof Array)
+    return object.map((element) => applyInclude(element, include));
+
   const result: any = {};
   for (const memberName in include) {
     if (typeof include[memberName] === 'boolean' && include[memberName]) {
@@ -60,7 +63,7 @@ function applyInclude(object: any, include: EasyRest.Include) {
   return result;
 }
 
-function createFetcher<T>(dict: Dict<T>, name: string) {
+export function createFetcher<T>(dict: Dict<T>, name: string) {
   return async ({
     ids,
     include,
@@ -68,6 +71,7 @@ function createFetcher<T>(dict: Dict<T>, name: string) {
     ids?: string[];
     include: EasyRest.Include;
   }) => {
+    console.log(JSON.stringify(include));
     const result: T[] = [];
     if (ids) {
       for (const id of ids) {
@@ -86,7 +90,7 @@ function createFetcher<T>(dict: Dict<T>, name: string) {
   };
 }
 
-const easyRest = new EasyRest.Instance({
+export const easyRest = new EasyRest.Instance({
   school: {
     members: {
       id: EasyRest.string(),
@@ -109,7 +113,10 @@ const easyRest = new EasyRest.Instance({
   class: {
     members: {
       id: EasyRest.string(),
-      students: EasyRest.array(EasyRest.entity('student')).allowVariation(),
+      students: EasyRest.array(EasyRest.entity('student'))
+        .useLightElements()
+        .allowVariation()
+        .excludeFromLight(),
       name: EasyRest.string(),
     },
     fetcher: createFetcher(classes, 'class'),
@@ -133,66 +140,4 @@ const easyRest = new EasyRest.Instance({
     fetcher: createFetcher(rooms, 'room'),
     methods: {},
   },
-});
-
-describe('Global tests', () => {
-  afterEach(resetDicts);
-  test('reject a wrong http method', async () => {
-    await expect(
-      easyRest.processQuery(['entities', 'room'], 'PATCH', {})
-    ).rejects.toBeInstanceOf(EasyRest.errors.MethodNotAllowedError);
-  });
-  test('reject request without the entities prefix', async () => {
-    await expect(
-      easyRest.processQuery(['room', '100'], 'GET', {})
-    ).rejects.toBeInstanceOf(EasyRest.errors.EntitiesPrefixMissingError);
-  });
-  test('reject empty request', async () => {
-    await expect(easyRest.processQuery([], 'GET', {})).rejects.toBeInstanceOf(
-      EasyRest.errors.NotFoundError
-    );
-  });
-  test('reject request to an unavailable id', async () => {
-    await expect(
-      easyRest.processQuery(['entities', 'room', '1'], 'GET', {})
-    ).rejects.toStrictEqual(
-      new EasyRest.errors.InvalidEntityIdError('1', 'room')
-    );
-  });
-  test('get all object of one entity', async () => {
-    Object.assign(students, {
-      john: { age: 13, id: 'john', name: 'John Ripper' },
-      elon: {
-        age: 12,
-        id: 'elon',
-        name: 'Elon Mask',
-      },
-    });
-    Object.assign(classes, {
-      '1a': {
-        id: '1a',
-        name: '1a class',
-        students: [students.john, students.elon],
-      },
-    });
-    await expect(
-      easyRest.processQuery(['entities', 'student'], 'GET', {})
-    ).resolves.toStrictEqual(
-      new EasyRest.ApiResult(200, [
-        { id: 'john', name: 'John Ripper' },
-        { id: 'elon', name: 'Elon Mask' },
-      ])
-    );
-    await expect(
-      easyRest.processQuery(['entities', 'class'], 'GET', {})
-    ).resolves.toStrictEqual(
-      new EasyRest.ApiResult(200, [
-        {
-          id: '1a',
-          name: '1a class',
-          students: [students.john, students.elon],
-        },
-      ])
-    );
-  });
 });

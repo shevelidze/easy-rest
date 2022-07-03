@@ -18,10 +18,10 @@ export default class EntityObjectQueryHandler implements QueryHandler {
   async handleQueryElement(query: string[], httpMethod: string, body: any) {
     query.shift();
     if (httpMethod === 'GET' && query.length === 0)
-      return {
-        code: 200,
-        body: await this.entityObject.fetch(this.entityObject.entity.include),
-      };
+      return new ApiResult(
+        200,
+        await this.entityObject.fetch(this.entityObject.entity.include)
+      );
     else if (httpMethod === 'POST' && query.length === 0) {
       return new ApiResult(200, await this.entityObject.mutate(body));
     } else if (httpMethod === 'DELETE' && query.length === 0) {
@@ -61,9 +61,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
           else if (query.length > 1) throw new InvalidRequestPathError();
           else if (httpMethod === 'GET') {
             return new ApiResult(200, {
-              value: await this.entityObject.fetch({
-                include: { [entityMemberName]: true },
-              })[entityMemberName],
+              value: await this.entityObject.fetchOneMember(entityMemberName),
             });
           } else if (httpMethod === 'POST') {
             if (!entityMember.isVariable)

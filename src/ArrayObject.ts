@@ -18,7 +18,7 @@ export default class ArrayObject {
         entitiesData.entities[this.entityMember.elementEntityMember.typeName];
     }
   }
-  fetch(elementInclude?: Include): any[] {
+  async fetch(elementInclude?: Include): Promise<any[]> {
     return this.ownerEntityObject.fetchOneMember(
       this.entityMemberName,
       elementInclude
