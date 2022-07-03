@@ -1,7 +1,7 @@
 import EasyRest from '../src';
 
 describe('Entites validation', () => {
-  test('throw an error to an entity with a wrong id type', () => {
+  test('throw an error to an entity with an id member', () => {
     expect(
       () =>
         new EasyRest.Instance({
@@ -13,21 +13,18 @@ describe('Entites validation', () => {
             fetcher: async () => null,
           },
         })
-    ).toThrow('id key must be a string.');
+    ).toThrow('id member name is reserved.');
   });
   test('throw an error to an unknown entity type', () => {
     expect(() => {
       new EasyRest.Instance({
         entity1: {
-          members: {
-            id: EasyRest.string(),
-          },
+          members: {},
           methods: {},
           fetcher: async () => null,
         },
         entity2: {
           members: {
-            id: EasyRest.string(),
             hamburger: EasyRest.entity('hamburger'),
           },
           methods: {},
@@ -38,15 +35,12 @@ describe('Entites validation', () => {
     expect(() => {
       new EasyRest.Instance({
         entity1: {
-          members: {
-            id: EasyRest.string(),
-          },
+          members: {},
           methods: {},
           fetcher: async () => null,
         },
         entity2: {
           members: {
-            id: EasyRest.string(),
             burgers: EasyRest.array(EasyRest.entity('cheeseburger')),
           },
           methods: {},

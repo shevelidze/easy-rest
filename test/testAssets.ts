@@ -93,7 +93,6 @@ export function createFetcher<T>(dict: Dict<T>, name: string) {
 export const easyRest = new EasyRest.Instance({
   school: {
     members: {
-      id: EasyRest.string(),
       building: EasyRest.entity('building').excludeFromLight(),
       name: EasyRest.string().allowVariation(),
       classes: EasyRest.array(EasyRest.entity('class')),
@@ -103,7 +102,6 @@ export const easyRest = new EasyRest.Instance({
   },
   building: {
     members: {
-      id: EasyRest.string(),
       rooms: EasyRest.array(EasyRest.entity('room')).excludeFromLight(),
       address: EasyRest.string(),
     },
@@ -112,7 +110,6 @@ export const easyRest = new EasyRest.Instance({
   },
   class: {
     members: {
-      id: EasyRest.string(),
       students: EasyRest.array(EasyRest.entity('student'))
         .useLightElements()
         .allowVariation()
@@ -124,7 +121,6 @@ export const easyRest = new EasyRest.Instance({
   },
   student: {
     members: {
-      id: EasyRest.string(),
       name: EasyRest.string(),
       age: EasyRest.number().excludeFromLight(),
     },
@@ -133,7 +129,6 @@ export const easyRest = new EasyRest.Instance({
   },
   room: {
     members: {
-      id: EasyRest.string(),
       number: EasyRest.number().allowVariation(),
       area: EasyRest.number(),
     },

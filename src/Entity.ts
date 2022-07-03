@@ -6,6 +6,7 @@ import {
   NoDeleterFunctionProvidedError,
 } from './errors';
 import { ArrayEntityMember, EntityMember } from './entityMembers';
+import EasyRest from '.';
 
 export default class Entity {
   constructor(name: string, entityBlueprint: EntityBlueprint) {
@@ -51,19 +52,15 @@ export default class Entity {
       );
   }
   initialize(entities: EntitesObject) {
-    let isIdMemberProvided = false;
+    if ('id' in this.entityBlueprint.members)
+      throw new Error('id member name is reserved.');
+
+    this.entityBlueprint.members.id = EasyRest.string();
 
     for (const memberKey in this.entityBlueprint.members) {
       let entityMember = this.entityBlueprint.members[memberKey];
 
       this.validateEntityMember(entityMember, entities);
-
-      if (memberKey === 'id') {
-        if (entityMember.typeName !== 'string')
-          throw new Error('id key must be a string.');
-
-        isIdMemberProvided = true;
-      }
 
       if (entityMember.typeName === 'array') {
         const arrayEntityMember = entityMember as ArrayEntityMember;
@@ -82,16 +79,12 @@ export default class Entity {
           ? true
           : entities[entityMember.typeName].include;
 
-
       this.lightInclude[memberKey] = entityMember.isExcludedFromLight
         ? false
         : entityMember.isPrimitive
         ? true
         : entities[entityMember.typeName].lightInclude;
     }
-
-    if (!isIdMemberProvided)
-      throw new Error('Each entity must have an id member.');
   }
   include: Include;
   lightInclude: Include;

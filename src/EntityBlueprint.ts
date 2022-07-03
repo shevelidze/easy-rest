@@ -19,7 +19,7 @@ export type Deleter = (id: string) => Promise<void>;
 
 export default interface EntityBlurprint {
   methods: { [key: string]: EntityMethod };
-  members: { id: EntityMember; [key: string]: EntityMember };
+  members: { [key: string]: EntityMember };
   creator?: Creator;
   fetcher: Fetcher;
   mutator?: Mutator;

@@ -9,23 +9,18 @@ import EntityObject from '../src/EntityObject';
 const easyRest = new EasyRest.Instance({
   company: {
     members: {
-      id: EasyRest.string(),
       name: EasyRest.string().excludeFromLight(),
     },
     fetcher: async () => {},
     methods: {},
   },
   building: {
-    members: {
-      id: EasyRest.string(),
-    },
+    members: {},
     fetcher: async () => {},
     methods: {},
   },
   vehicle: {
-    members: {
-      id: EasyRest.string(),
-    },
+    members: {},
     fetcher: async () => {},
     methods: {},
   },
