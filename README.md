@@ -1,5 +1,8 @@
 # Easyrest
 
+<a href="https://www.npmjs.com/package/@shevelidze/easyrest"><img src="https://img.shields.io/npm/v/@shevelidze/easyrest" alt="npm"></a>
+<img src="https://img.shields.io/github/license/shevelidze/easyrest" alt="github"></img>
+
 Easyrest is a typescript library for building RESTful APis without repeating yourself. It takes care about all aspects that cause a headache in a RESTful API developing process.
 
 Easyrest offers:
