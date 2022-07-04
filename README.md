@@ -7,18 +7,20 @@ Easyrest is a typescript library for building RESTful APIs without repeating you
 
 Easyrest offers:
 1. Simple entities architecture, which allows to design your api using small amount of code.
-2. Opportunity to use it with any possible web framework. It doesn't have any framework specific features or something similar.
+2. Opportunity to use it with any possible web framework. It doesn't have any framework specific features.
 3. Opportunity to use different approaches to fetch data. For an every entity you have to provide a fetcher, mutator, and deleter functions. You decide how it will work inside.
 
-## Getting started
-
+## Installation
+You can install Easyrest using `npm`:
 ```
 npm install @shevelidze/easyrest
 ```
-or
+Or using `yarn`:
 ```
 yarn add  @shevelidze/easyrest
 ```
+
+## Basic usage
 
 First of all you have to decide with the entities, which you will have in the api and develop fetcher for each. You can find out more about the fetchers in the [Fetchers](#fetchers) section.
 
@@ -62,7 +64,7 @@ const easyRest = new EasyRest.Instance({
 });
 ```
 
-For processing queries, EasyRest.Instance has a method [processQuery](#process-query). It take as arguments, query array (for request with a path `/foo/bar/1`, for example, it will be `['foo', 'bar', '1']`), HTTP method and body object. The easiest way, use JSON for body and than just convert it to an object, but you are free to use any other way.
+For processing queries, EasyRest.Instance has a method [processQuery](#process-query). It take as arguments, query array (for request with a path `/foo/bar/1`, for example, it will be `['foo', 'bar', '1']`), HTTP method and body object. The easiest way, use JSON for the body and than just convert it to an object, but you are free to use any other way.
 
 When you get a request you have to call this method.
 
@@ -76,6 +78,6 @@ If not, it will return an instance of [EasyRest.ApiResult](#api-result), which c
 
 **After all theese manipulations you can:**
 
-- get all the object of the entity: `GET /entities/worker` &rarr; `[{id: "1", name: "John"... }, {id: "2", name: "Victor"...}]`
+- get all objects of the entity: `GET /entities/worker` &rarr; `[{id: "1", name: "John"... }, {id: "2", name: "Victor"...}]`
 - get an object by id: `GET /entities/animal/12` &rarr; `{id: "12", name: "Lucky", type: {id: "2", name: "Dog"}}`
-- get only one member of the object: `GET /entities/animal/12/type` &rarr; `{id: 2, name: "Dog"}`
+- get only one member of an object: `GET /entities/animal/12/type` &rarr; `{id: 2, name: "Dog"}`

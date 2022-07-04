@@ -19,6 +19,12 @@ export class NotFoundError extends EasyRestError {
   }
 }
 
+export class BadRequestError extends EasyRestError {
+  constructor(message?: string) {
+    super(message || 'Bad request.', 400);
+  }
+}
+
 export class InvalidEntityIdError extends NotFoundError {
   constructor(id: string, entityName: string) {
     super(
@@ -97,5 +103,11 @@ export class TryingToVariateNotVariableMemberError extends MethodNotAllowedError
 export class IndexIsNaNError extends NotFoundError {
   constructor(index: string) {
     super(`Index must be a number. ${index} is not a number.`);
+  }
+}
+
+export class InvalidMethodArguments extends BadRequestError {
+  constructor(methodName: string) {
+    super(`Invalid method arguments for the method ${methodName}.`);
   }
 }

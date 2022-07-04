@@ -1,5 +1,7 @@
+import { validate } from 'jtd';
 import QueryHandler, { ApiResult } from './QueryHandler';
 import {
+  InvalidMethodArguments,
   InvalidRequestPathError,
   MemeberOrMethodNotFoundError,
   MethodNotAllowedError,
@@ -35,14 +37,27 @@ export default class EntityObjectQueryHandler implements QueryHandler {
             'For methods calling only POST requests are being accepted.'
           );
 
-        //todo: add validation
-        return new ApiResult(
-          200,
-          await this.entityObject.entity.entityBlueprint.methods[query[0]].func(
-            this.entityObject.id,
-            body
-          )
-        );
+        const method =
+          this.entityObject.entity.entityBlueprint.methods[query[0]];
+
+        if (method.argumentsJtdSchema !== undefined) {
+          const validationResult = validate(method.argumentsJtdSchema, body);
+          if (validationResult.length > 0)
+            throw new InvalidMethodArguments(query[0]);
+        }
+
+        const methodResult = await method.func(this.entityObject.id, body);
+
+        if (method.resultJtdSchema !== undefined) {
+          const validationResult = validate(
+            method.resultJtdSchema,
+            methodResult
+          );
+          if (validationResult.length > 0)
+            throw new Error(`Invalid method result in the method ${query[0]}`);
+        }
+
+        return new ApiResult(200, methodResult);
       } else if (query[0] in this.entityObject.entity.entityBlueprint.members) {
         const entityMemberName = query[0];
         const entityMember =

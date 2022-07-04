@@ -1,4 +1,5 @@
-import { Mutate, type Include } from './EntityBlueprint';
+import { isSchema, isValidSchema, Schema } from 'jtd';
+import { type Mutate, type Include } from './EntityBlueprint';
 import type EntityBlueprint from './EntityBlueprint';
 import {
   NoCreatorFunctionProvidedError,
@@ -7,6 +8,7 @@ import {
 } from './errors';
 import { ArrayEntityMember, EntityMember } from './entityMembers';
 import EasyRest from '.';
+import EntityMethod from './EntityMethod';
 
 export default class Entity {
   constructor(name: string, entityBlueprint: EntityBlueprint) {
@@ -51,7 +53,30 @@ export default class Entity {
         `Failed to find entity with a name ${entityMember.typeName}.`
       );
   }
+  validateJtdSchema(schema?: Schema) {
+    return (
+      schema === undefined || !(!isSchema(schema) || !isValidSchema(schema))
+    );
+  }
+  validateEntityMethod(methodName: string, entityMethod: EntityMethod) {
+    if (!this.validateJtdSchema(entityMethod.argumentsJtdSchema))
+      throw new Error(
+        `Invalid arguments jtd schema of the method ${methodName} of the entity ${this.name}.`
+      );
+
+    if (!this.validateJtdSchema(entityMethod.resultJtdSchema))
+      throw new Error(
+        `Invalid result jtd schema of the method ${methodName} of the entity ${this.name}.`
+      );
+  }
   initialize(entities: EntitesObject) {
+    for (const methodName in this.entityBlueprint.methods) {
+      this.validateEntityMethod(
+        methodName,
+        this.entityBlueprint.methods[methodName]
+      );
+    }
+
     if ('id' in this.entityBlueprint.members)
       throw new Error('id member name is reserved.');
 
