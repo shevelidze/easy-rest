@@ -17,7 +17,7 @@ export type Fetcher = (args: {
 export type Mutator = (id: string, mutate: Mutate) => Promise<void>;
 export type Deleter = (id: string) => Promise<void>;
 
-export default interface EntityBlurprint {
+export default interface EntityBlueprint {
   methods: { [key: string]: EntityMethod };
   members: { [key: string]: EntityMember };
   creator?: Creator;

@@ -7,3 +7,4 @@ export {
   type Include,
   type default as EntityBlueprint,
 } from './EntityBlueprint';
+export { Creator, Fetcher, Deleter } from './EntityBlueprint';
