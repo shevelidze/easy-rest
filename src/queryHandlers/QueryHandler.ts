@@ -11,6 +11,7 @@ export default interface QueryHandler {
   handleQueryElement: (
     query: string[],
     httpMethod: string,
-    body?: any
+    body: any,
+    auth: any
   ) => Promise<QueryHandler | ApiResult>;
 }

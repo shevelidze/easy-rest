@@ -1,31 +1,37 @@
 import Entity from './Entity';
-import { Include } from './EntityBlueprint';
+import { DataModifierArgs, Include, MutatorArgs } from './EntityBlueprint';
 
 export default class EntityObject {
   constructor(id: string, entity: Entity) {
     this.id = id;
     this.entity = entity;
   }
-  async fetch(include: Include) {
-    return (await this.entity.fetch({ ids: [this.id], include }))?.[0];
+  async fetch(args: { include: Include } & DataModifierArgs) {
+    return (await this.entity.fetch({ ids: [this.id], ...args }))?.[0];
   }
-  async fetchOneMember(memberName: string, memberInclude?: Include) {
-    if (this.entity.entityBlueprint.members[memberName] === undefined)
+  async fetchOneMember(
+    args: { memberName: string; memberInclude?: Include } & DataModifierArgs
+  ) {
+    if (this.entity.entityBlueprint.members[args.memberName] === undefined)
       throw new Error(
-        `Entity ${this.entity.name} has no members with name ${memberName}.`
+        `Entity ${this.entity.name} has no members with name ${args.memberName}.`
       );
 
     return (
       await this.fetch({
-        [memberName]: memberInclude || this.entity.include[memberName],
+        auth: args.auth,
+        include: {
+          [args.memberName]:
+            args.memberInclude || this.entity.include[args.memberName],
+        },
       })
-    )[memberName];
+    )[args.memberName];
   }
-  delete() {
-    return this.entity.delete(this.id);
+  delete(args: DataModifierArgs) {
+    return this.entity.delete({ id: this.id, ...args });
   }
-  mutate(mutate: any) {
-    return this.entity.mutate(this.id, mutate);
+  mutate(args: MutatorArgs) {
+    return this.entity.mutate({ id: this.id, ...args });
   }
 
   entity: Entity;

@@ -15,11 +15,16 @@ export default class ArrayQueryHandler implements QueryHandler {
     arrayObject = arrayObject;
     entitesData = entitesData;
   }
-  async handleQueryElement(query: string[], httpMethod: string, body: any) {
+  async handleQueryElement(
+    query: string[],
+    httpMethod: string,
+    body: any,
+    auth: any
+  ) {
     query.shift();
     if (httpMethod === 'GET' && query.length === 0) {
       return new ApiResult(200, {
-        value: await this.arrayObject.fetch(),
+        value: await this.arrayObject.fetch({ auth }),
       });
     } else if (
       httpMethod === 'GET' &&
@@ -27,14 +32,17 @@ export default class ArrayQueryHandler implements QueryHandler {
       query.length === 1
     ) {
       const indexNumber = this.arrayObject.parseIndex(query[0]);
-      return new ApiResult(200, (await this.arrayObject.fetch())[indexNumber]);
+      return new ApiResult(
+        200,
+        (await this.arrayObject.fetch({ auth }))[indexNumber]
+      );
     } else if (
       !this.arrayObject.elementEntityMember.isPrimitive &&
       query.length > 0
     ) {
       return new EntityObjectQueryHandler(
         new EntityObject(
-          this.arrayObject.getIdByIndex(query[0]),
+          this.arrayObject.getIdByIndex(query[0], auth),
           this.arrayObject.elementEntity
         ),
         this.entitiesData
@@ -51,7 +59,7 @@ export default class ArrayQueryHandler implements QueryHandler {
         );
 
       const indexNumber = this.arrayObject.parseIndex(query[0]);
-      const newArray = await this.arrayObject.fetch();
+      const newArray = await this.arrayObject.fetch({ auth });
 
       if (httpMethod === 'DELETE') {
         const deletedElements = newArray.splice(indexNumber, 1);
@@ -62,12 +70,18 @@ export default class ArrayQueryHandler implements QueryHandler {
           );
 
         await this.arrayObject.ownerEntityObject.mutate({
-          [this.arrayObject.entityMemberName]: newArray,
+          auth,
+          mutate: {
+            [this.arrayObject.entityMemberName]: newArray,
+          },
         });
       } else {
         newArray.push(body.value);
         await this.arrayObject.ownerEntityObject.mutate({
-          [this.arrayObject.entityMemberName]: newArray,
+          auth,
+          mutate: {
+            [this.arrayObject.entityMemberName]: newArray,
+          },
         });
       }
 

@@ -9,13 +9,24 @@ export interface Mutate {
   [key: string]: any;
 }
 
-export type Creator = (newObejct: any) => Promise<void>;
-export type Fetcher = (args: {
+export type DataModifierArgs = { auth: any };
+export type WithId = { id: string };
+
+export type CreatorArgs = { newObject: any } & DataModifierArgs;
+export type Creator = (args: CreatorArgs) => Promise<void>;
+
+export type FetcherArgs = {
   ids?: string[];
   include: Include;
-}) => Promise<any>;
-export type Mutator = (id: string, mutate: Mutate) => Promise<void>;
-export type Deleter = (id: string) => Promise<void>;
+} & DataModifierArgs;
+export type Fetcher = (args: FetcherArgs) => Promise<any>;
+
+export type MutatorArgs = {
+  mutate: Mutate;
+} & DataModifierArgs;
+export type Mutator = (args: MutatorArgs & WithId) => Promise<void>;
+
+export type Deleter = (args: DataModifierArgs & WithId) => Promise<void>;
 
 export default interface EntityBlueprint {
   methods: { [key: string]: EntityMethod };

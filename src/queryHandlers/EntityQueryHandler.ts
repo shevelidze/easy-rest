@@ -10,12 +10,17 @@ export default class EntityQueryHandler implements QueryHandler {
     this.entitiesData = entitesData;
   }
 
-  async handleQueryElement(query: string[], httpMethod: string, body: any) {
+  async handleQueryElement(
+    query: string[],
+    httpMethod: string,
+    body: any,
+    auth: any
+  ) {
     query.shift();
     if (httpMethod === 'GET' && query.length === 0)
       return new ApiResult(
         200,
-        await this.entity.fetch({ include: this.entity.lightInclude })
+        await this.entity.fetch({ include: this.entity.lightInclude, auth })
       );
     else if (httpMethod === 'PUT' && query.length === 0) {
       await this.entity.create(body);

@@ -1,6 +1,6 @@
 import EntitiesData from './EntitiesData';
 import Entity from './Entity';
-import { Include } from './EntityBlueprint';
+import { DataModifierArgs, Include } from './EntityBlueprint';
 import { ArrayEntityMember } from './entityMembers';
 import EntityObject from './EntityObject';
 import { IndexIsNaNError, MemeberOrMethodNotFoundError } from './errors';
@@ -18,16 +18,19 @@ export default class ArrayObject {
         entitiesData.entities[this.entityMember.elementEntityMember.typeName];
     }
   }
-  async fetch(elementInclude?: Include): Promise<any[]> {
-    return this.ownerEntityObject.fetchOneMember(
-      this.entityMemberName,
-      elementInclude
-    );
+  async fetch(
+    args: { elementInclude?: Include } & DataModifierArgs
+  ): Promise<any[]> {
+    return this.ownerEntityObject.fetchOneMember({
+      memberName: this.entityMemberName,
+      memberInclude: args.elementInclude,
+      auth: args.auth,
+    });
   }
-  getIdByIndex(index: string): string {
+  getIdByIndex(index: string, auth: any): string {
     let elementIndex: number = this.parseIndex(index);
     let arrayElementsIds: any;
-    arrayElementsIds = this.fetch({ id: true });
+    arrayElementsIds = this.fetch({ elementInclude: { id: true }, auth });
     if (arrayElementsIds[elementIndex] === undefined)
       throw new MemeberOrMethodNotFoundError(
         `${this.ownerEntityObject.entity.name}.${this.entityMemberName} array`,

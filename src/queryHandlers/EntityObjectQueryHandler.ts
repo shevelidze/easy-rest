@@ -17,17 +17,25 @@ export default class EntityObjectQueryHandler implements QueryHandler {
     this.entityObject = entityObject;
     this.entitiesData = entitiesData;
   }
-  async handleQueryElement(query: string[], httpMethod: string, body: any) {
+  async handleQueryElement(
+    query: string[],
+    httpMethod: string,
+    body: any,
+    auth: any
+  ) {
     query.shift();
     if (httpMethod === 'GET' && query.length === 0)
       return new ApiResult(
         200,
-        await this.entityObject.fetch(this.entityObject.entity.include)
+        await this.entityObject.fetch({
+          include: this.entityObject.entity.include,
+          auth,
+        })
       );
     else if (httpMethod === 'POST' && query.length === 0) {
       return new ApiResult(200, await this.entityObject.mutate(body));
     } else if (httpMethod === 'DELETE' && query.length === 0) {
-      return new ApiResult(200, await this.entityObject.delete());
+      return new ApiResult(200, await this.entityObject.delete({ auth }));
     } else {
       if (query.length === 0) throw new InvalidRequestPathError();
 
@@ -76,7 +84,10 @@ export default class EntityObjectQueryHandler implements QueryHandler {
           else if (query.length > 1) throw new InvalidRequestPathError();
           else if (httpMethod === 'GET') {
             return new ApiResult(200, {
-              value: await this.entityObject.fetchOneMember(entityMemberName),
+              value: await this.entityObject.fetchOneMember({
+                memberName: entityMemberName,
+                auth,
+              }),
             });
           } else if (httpMethod === 'POST') {
             if (!entityMember.isVariable)
@@ -86,7 +97,11 @@ export default class EntityObjectQueryHandler implements QueryHandler {
               );
 
             //todo: add validation
-            await this.entityObject.entity.mutate(this.entityObject.id, body);
+            await this.entityObject.entity.mutate({
+              id: this.entityObject.id,
+              mutate: body,
+              auth,
+            });
             return new ApiResult();
           }
 
@@ -96,8 +111,9 @@ export default class EntityObjectQueryHandler implements QueryHandler {
             new EntityObject(
               (
                 await this.entityObject.fetch({
+                  include: {
                   [entityMemberName]: { id: true },
-                })
+                }, auth})
               )[entityMemberName].id,
               this.entitiesData.entities[entityMember.typeName]
             ),

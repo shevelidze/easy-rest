@@ -32,13 +32,13 @@ describe('Query handlers', () => {
       await expect(
         easyRest.initialQueryHandler.handleQueryElement(
           ['companty', '123', 'building'],
-          'GET'
+          'GET', {}, {}
         )
       ).rejects.toBeInstanceOf(EasyRest.errors.EntitiesPrefixMissingError);
     });
     test('reject empty query', async () => {
       await expect(
-        easyRest.initialQueryHandler.handleQueryElement([], 'GET')
+        easyRest.initialQueryHandler.handleQueryElement([], 'GET', {}, {})
       ).rejects.toBeInstanceOf(EasyRest.errors.InvalidRequestPathError);
     });
     test.each([
@@ -46,7 +46,7 @@ describe('Query handlers', () => {
       [['entities', 'flat', '123']],
     ])('reject query with a wrong entity. Query: %s', async (query) => {
       await expect(
-        easyRest.initialQueryHandler.handleQueryElement(query, 'GET')
+        easyRest.initialQueryHandler.handleQueryElement(query, 'GET', {}, {})
       ).rejects.toBeInstanceOf(EasyRest.errors.InvalidEntityNameError);
     });
     test.each([
@@ -64,7 +64,7 @@ describe('Query handlers', () => {
       ],
     ])('return a valid entity handler. Query: %s', async (query, handler) => {
       await expect(
-        easyRest.initialQueryHandler.handleQueryElement(query, 'GET')
+        easyRest.initialQueryHandler.handleQueryElement(query, 'GET', {}, {})
       ).resolves.toBe(handler);
     });
   });
@@ -76,7 +76,7 @@ describe('Query handlers', () => {
         easyRest.entitiesData
       );
       await expect(
-        entityHandler.handleQueryElement([], 'PUT', {})
+        entityHandler.handleQueryElement([], 'PUT', {}, {})
       ).rejects.toBeInstanceOf(EasyRest.errors.NoCreatorFunctionProvidedError);
     });
     test('get all objects', async () => {
@@ -88,10 +88,11 @@ describe('Query handlers', () => {
         easyRest.entitiesData
       );
       await expect(
-        entityHandler.handleQueryElement([], 'GET', {})
+        entityHandler.handleQueryElement([], 'GET', {}, {})
       ).resolves.toStrictEqual(new ApiResult(200, 'fetch result'));
       expect(fetcherMock.mock.lastCall[0]).toEqual({
         include: easyRest.entitiesData.entities.company.lightInclude,
+        auth: {}
       });
     });
 
@@ -104,7 +105,7 @@ describe('Query handlers', () => {
         easyRest.entitiesData
       );
       const creatorArg = { id: 'building1234' };
-      await expect(entityHandler.handleQueryElement([], 'PUT', creatorArg));
+      await expect(entityHandler.handleQueryElement([], 'PUT', creatorArg, {}));
       expect(creatorMock.mock.lastCall[0]).toBe(creatorArg);
     });
   });
@@ -115,7 +116,7 @@ describe('Query handlers', () => {
         easyRest.entitiesData
       );
       await expect(
-        entityObjectHandler.handleQueryElement([], 'POST', {})
+        entityObjectHandler.handleQueryElement([], 'POST', {}, {})
       ).rejects.toBeInstanceOf(EasyRest.errors.NoMutatorFunctionProvidedError);
     });
   });

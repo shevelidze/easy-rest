@@ -36,7 +36,8 @@ export default class Instance {
   async processQuery(
     query: string[],
     httpMethod: string,
-    bodyObject?: any
+    bodyObject?: any,
+    authObject?: any
   ): Promise<ApiResult> {
     const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'];
     if (!allowedMethods.includes(httpMethod))
@@ -48,11 +49,15 @@ export default class Instance {
 
     let currentQueryHandler = this.initialQueryHandler;
 
+    if (bodyObject === undefined) bodyObject = {};
+    if (authObject === undefined) authObject = {};
+
     while (query.length > 0) {
       let handlerResult = await currentQueryHandler.handleQueryElement(
         query,
         httpMethod,
-        bodyObject
+        bodyObject,
+        authObject
       );
       if (handlerResult instanceof ApiResult) return handlerResult;
       currentQueryHandler = handlerResult;

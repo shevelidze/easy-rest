@@ -1,5 +1,12 @@
 import { isSchema, isValidSchema, Schema } from 'jtd';
-import { type Mutate, type Include } from './EntityBlueprint';
+import {
+  type Mutate,
+  type Include,
+  FetcherArgs,
+  MutatorArgs,
+  WithId,
+  DataModifierArgs,
+} from './EntityBlueprint';
 import type EntityBlueprint from './EntityBlueprint';
 import {
   NoCreatorFunctionProvidedError,
@@ -23,20 +30,20 @@ export default class Entity {
 
     return this.entityBlueprint.creator(newObject);
   }
-  fetch(args: { ids?: string[]; include: Include }) {
+  fetch(args: FetcherArgs) {
     return this.entityBlueprint.fetcher(args);
   }
-  mutate(id: string, mutate: Mutate) {
+  mutate(args: MutatorArgs & WithId) {
     if (this.entityBlueprint.mutator === undefined)
       throw new NoMutatorFunctionProvidedError(this.name);
 
-    return this.entityBlueprint.mutator(id, mutate);
+    return this.entityBlueprint.mutator(args);
   }
-  delete(id: string) {
+  delete(args: DataModifierArgs & WithId) {
     if (this.entityBlueprint.deleter === undefined)
       throw new NoDeleterFunctionProvidedError(this.name);
 
-    return this.entityBlueprint.deleter(id);
+    return this.entityBlueprint.deleter(args);
   }
   validateEntityMember(entityMember: EntityMember, entities: EntitesObject) {
     if (entityMember.typeName === 'array') {
