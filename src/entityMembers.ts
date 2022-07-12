@@ -16,7 +16,7 @@ export class EntityMember {
 }
 
 export class PrimitiveEntityMember extends EntityMember {
-  constructor(typeName: 'string' | 'number' | 'array') {
+  constructor(typeName: 'string' | 'number' | 'array' | 'boolean') {
     super(typeName, true);
   }
   allowVariation(): EntityMember {
@@ -50,6 +50,10 @@ export function string(): PrimitiveEntityMember {
 }
 
 export function number(): PrimitiveEntityMember {
+  return new PrimitiveEntityMember('number');
+}
+
+export function boolean(): PrimitiveEntityMember {
   return new PrimitiveEntityMember('number');
 }
 
