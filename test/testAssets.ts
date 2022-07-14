@@ -71,7 +71,6 @@ export function createFetcher<T>(dict: Dict<T>, name: string) {
     ids?: string[];
     include: EasyRest.Include;
   }) => {
-    console.log(JSON.stringify(include));
     const result: T[] = [];
     if (ids) {
       for (const id of ids) {
@@ -93,8 +92,8 @@ export function createFetcher<T>(dict: Dict<T>, name: string) {
 export const easyRest = new EasyRest.Instance({
   school: {
     members: {
-      building: EasyRest.entity('building').excludeFromLight(),
-      name: EasyRest.string().allowVariation(),
+      building: EasyRest.entity('building').excludedFromLight(),
+      name: EasyRest.string().variable(),
       classes: EasyRest.array(EasyRest.entity('class')),
     },
     fetcher: createFetcher(schools, 'school'),
@@ -102,7 +101,7 @@ export const easyRest = new EasyRest.Instance({
   },
   building: {
     members: {
-      rooms: EasyRest.array(EasyRest.entity('room')).excludeFromLight(),
+      rooms: EasyRest.array(EasyRest.entity('room')).excludedFromLight(),
       address: EasyRest.string(),
     },
     fetcher: createFetcher(buildings, 'building'),
@@ -111,9 +110,8 @@ export const easyRest = new EasyRest.Instance({
   class: {
     members: {
       students: EasyRest.array(EasyRest.entity('student'))
-        .useLightElements()
-        .allowVariation()
-        .excludeFromLight(),
+        .lightElements()
+        .variable(),
       name: EasyRest.string(),
     },
     fetcher: createFetcher(classes, 'class'),
@@ -122,14 +120,14 @@ export const easyRest = new EasyRest.Instance({
   student: {
     members: {
       name: EasyRest.string(),
-      age: EasyRest.number().excludeFromLight(),
+      age: EasyRest.number().excludedFromLight(),
     },
     fetcher: createFetcher(students, 'student'),
     methods: {},
   },
   room: {
     members: {
-      number: EasyRest.number().allowVariation(),
+      number: EasyRest.number().variable(),
       area: EasyRest.number(),
     },
     fetcher: createFetcher(rooms, 'room'),

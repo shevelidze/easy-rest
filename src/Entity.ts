@@ -1,129 +1,100 @@
-import { isSchema, isValidSchema, Schema } from 'jtd';
-import {
-  type Mutate,
-  type Include,
-  FetcherArgs,
-  MutatorArgs,
-  WithId,
-  DataModifierArgs,
+import { SchemaFormProperties, isValidSchema } from 'jtd';
+import type {
+  Fetcher,
+  Mutator,
+  Deleter,
+  Creator,
+  Include,
+  EntityMembersDict,
 } from './EntityBlueprint';
 import type EntityBlueprint from './EntityBlueprint';
+import { EntityMethodBlueprintsDict, EntityMethodsDict } from './EntityMethod';
 import {
   NoCreatorFunctionProvidedError,
   NoMutatorFunctionProvidedError,
   NoDeleterFunctionProvidedError,
 } from './errors';
-import { ArrayEntityMember, EntityMember } from './entityMembers';
-import EasyRest from '.';
-import EntityMethod from './EntityMethod';
 
-export default class Entity {
-  constructor(name: string, entityBlueprint: EntityBlueprint) {
-    this.entityBlueprint = entityBlueprint;
-    this.name = name;
-    this.include = {};
-    this.lightInclude = {};
-  }
-  create(newObject: any) {
-    if (this.entityBlueprint.creator === undefined)
-      throw new NoCreatorFunctionProvidedError(this.name);
-
-    return this.entityBlueprint.creator(newObject);
-  }
-  fetch(args: FetcherArgs) {
-    return this.entityBlueprint.fetcher(args);
-  }
-  mutate(args: MutatorArgs & WithId) {
-    if (this.entityBlueprint.mutator === undefined)
-      throw new NoMutatorFunctionProvidedError(this.name);
-
-    return this.entityBlueprint.mutator(args);
-  }
-  delete(args: DataModifierArgs & WithId) {
-    if (this.entityBlueprint.deleter === undefined)
-      throw new NoDeleterFunctionProvidedError(this.name);
-
-    return this.entityBlueprint.deleter(args);
-  }
-  validateEntityMember(entityMember: EntityMember, entities: EntitesObject) {
-    if (entityMember.typeName === 'array') {
-      const arrayEntityMember = entityMember as ArrayEntityMember;
-      this.validateEntityMember(
-        arrayEntityMember.elementEntityMember,
-        entities
-      );
-    } else if (
-      !entityMember.isPrimitive &&
-      entities[entityMember.typeName] === undefined
+function generateMethods(
+  blueprints: EntityMethodBlueprintsDict
+): EntityMethodsDict {
+  const result: EntityMethodsDict = {};
+  for (const key in blueprints) {
+    const blueprint = blueprints[key];
+    if (
+      blueprint.argumentsJtdSchema !== undefined &&
+      !isValidSchema(blueprint.argumentsJtdSchema)
     )
-      throw new Error(
-        `Failed to find entity with a name ${entityMember.typeName}.`
-      );
+      throw new Error(`Invalid arguments JTD schema in the method ${key}.`);
+
+    result[key] = {
+      argumentsJtdSchema: blueprint.argumentsJtdSchema || {},
+      func: blueprint.func,
+    };
   }
-  validateJtdSchema(schema?: Schema) {
-    return (
-      schema === undefined || !(!isSchema(schema) || !isValidSchema(schema))
-    );
-  }
-  validateEntityMethod(methodName: string, entityMethod: EntityMethod) {
-    if (!this.validateJtdSchema(entityMethod.argumentsJtdSchema))
-      throw new Error(
-        `Invalid arguments jtd schema of the method ${methodName} of the entity ${this.name}.`
-      );
 
-    if (!this.validateJtdSchema(entityMethod.resultJtdSchema))
-      throw new Error(
-        `Invalid result jtd schema of the method ${methodName} of the entity ${this.name}.`
-      );
-  }
-  initialize(entities: EntitesObject) {
-    for (const methodName in this.entityBlueprint.methods) {
-      this.validateEntityMethod(
-        methodName,
-        this.entityBlueprint.methods[methodName]
-      );
-    }
-
-    if ('id' in this.entityBlueprint.members)
-      throw new Error('id member name is reserved.');
-
-    this.entityBlueprint.members.id = EasyRest.string();
-
-    for (const memberKey in this.entityBlueprint.members) {
-      let entityMember = this.entityBlueprint.members[memberKey];
-
-      this.validateEntityMember(entityMember, entities);
-
-      if (entityMember.typeName === 'array') {
-        const arrayEntityMember = entityMember as ArrayEntityMember;
-
-        this.include[memberKey] = arrayEntityMember.elementEntityMember
-          .isPrimitive
-          ? true
-          : arrayEntityMember.isUsingLightElements
-          ? entities[arrayEntityMember.elementEntityMember.typeName]
-              .lightInclude
-          : entities[arrayEntityMember.elementEntityMember.typeName].include;
-
-        entityMember = arrayEntityMember.elementEntityMember;
-      } else
-        this.include[memberKey] = entityMember.isPrimitive
-          ? true
-          : entities[entityMember.typeName].include;
-
-      this.lightInclude[memberKey] = entityMember.isExcludedFromLight
-        ? false
-        : entityMember.isPrimitive
-        ? true
-        : entities[entityMember.typeName].lightInclude;
-    }
-  }
-  include: Include;
-  lightInclude: Include;
-  entityBlueprint: EntityBlueprint;
-  name: string;
+  return result;
 }
 
-export interface EntitesObject {
+export default class Entity {
+  constructor(
+    name: string,
+    entityBlueprint: EntityBlueprint,
+    intialCreatorSchema: SchemaFormProperties,
+    include: Include,
+    lightInclude: Include
+  ) {
+    this.name = name;
+
+    this.members = entityBlueprint.members || {};
+    this.methods = generateMethods(entityBlueprint.methods || {});
+
+    this.fetch = entityBlueprint.fetcher;
+    this.create =
+      entityBlueprint.creator ||
+      (async () => {
+        throw new NoCreatorFunctionProvidedError(name);
+      });
+    this.delete =
+      entityBlueprint.deleter ||
+      (async () => {
+        throw new NoDeleterFunctionProvidedError(name);
+      });
+    this.mutate =
+      entityBlueprint.mutator ||
+      (async () => {
+        throw new NoMutatorFunctionProvidedError(name);
+      });
+
+    this.include = include;
+    this.lightInclude = lightInclude;
+
+    this.creatorSchema = intialCreatorSchema;
+    const {
+      properties: userCreatorSchemaProperties,
+      ...restUserCreatorSchema
+    } = entityBlueprint.creatorSchema || {};
+    Object.assign(this.creatorSchema, restUserCreatorSchema);
+    Object.assign(this.creatorSchema.properties, userCreatorSchemaProperties);
+  }
+
+  name: string;
+
+  include: Include;
+  lightInclude: Include;
+
+  fetch: Fetcher;
+  create: Creator;
+  mutate: Mutator;
+  delete: Deleter;
+
+  members: EntityMembersDict;
+  methods: EntityMethodsDict;
+
+  creatorSchema: SchemaFormProperties;
+  mutatorSchema: SchemaFormProperties;
+}
+
+export interface EntitiesDict {
   [key: string]: Entity;
 }

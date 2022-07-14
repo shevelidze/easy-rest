@@ -45,6 +45,10 @@ describe('Gettings', () => {
         { id: 'elon', name: 'Elon Mask' },
       ])
     );
+    console.log(ta.easyRest.entitiesData.entities.class.include);
+    console.log(
+      await ta.easyRest.processQuery(['entities', 'class'], 'GET', {})
+    );
     await expect(
       ta.easyRest.processQuery(['entities', 'class'], 'GET', {})
     ).resolves.toStrictEqual(

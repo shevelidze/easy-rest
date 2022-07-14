@@ -11,6 +11,7 @@ import type EntitiesData from '../EntitiesData';
 import EntityObject from '../EntityObject';
 import ArrayQueryHandler from './ArrayQueryHandler';
 import ArrayObject from '../ArrayObject';
+import { ArrayEntityMemberBlueprint, PrimitiveEntityMember } from '../entityMembers';
 
 export default class EntityObjectQueryHandler implements QueryHandler {
   constructor(entityObject: EntityObject, entitiesData: EntitiesData) {
@@ -39,14 +40,13 @@ export default class EntityObjectQueryHandler implements QueryHandler {
     } else {
       if (query.length === 0) throw new InvalidRequestPathError();
 
-      if (query[0] in this.entityObject.entity.entityBlueprint.methods) {
+      if (query[0] in this.entityObject.entity.methods) {
         if (httpMethod !== 'POST')
           throw new MethodNotAllowedError(
             'For methods calling only POST requests are being accepted.'
           );
 
-        const method =
-          this.entityObject.entity.entityBlueprint.methods[query[0]];
+        const method = this.entityObject.entity.methods[query[0]];
 
         if (method.argumentsJtdSchema !== undefined) {
           const validationResult = validate(method.argumentsJtdSchema, body);
@@ -54,25 +54,18 @@ export default class EntityObjectQueryHandler implements QueryHandler {
             throw new InvalidMethodArguments(query[0]);
         }
 
-        const methodResult = await method.func(this.entityObject.id, body);
-
-        if (method.resultJtdSchema !== undefined) {
-          const validationResult = validate(
-            method.resultJtdSchema,
-            methodResult
-          );
-          if (validationResult.length > 0)
-            throw new Error(`Invalid method result in the method ${query[0]}`);
-        }
+        const methodResult = await method.func({
+          id: this.entityObject.id,
+          body,
+          auth,
+        });
 
         return new ApiResult(200, methodResult);
-      } else if (query[0] in this.entityObject.entity.entityBlueprint.members) {
+      } else if (query[0] in this.entityObject.entity.members) {
         const entityMemberName = query[0];
-        const entityMember =
-          this.entityObject.entity.entityBlueprint.members[entityMemberName];
+        const entityMember = this.entityObject.entity.members[entityMemberName];
 
-        if (entityMember.isPrimitive) {
-          if (entityMember.typeName === 'array')
+        if (entityMember instanceof ArrayEntityMemberBlueprint) {
             return new ArrayQueryHandler(
               new ArrayObject(
                 entityMemberName,
@@ -81,7 +74,9 @@ export default class EntityObjectQueryHandler implements QueryHandler {
               ),
               this.entitiesData
             );
-          else if (query.length > 1) throw new InvalidRequestPathError();
+        }
+        else if (entityMember instanceof PrimitiveEntityMember) {
+          if (query.length > 1) throw new InvalidRequestPathError();
           else if (httpMethod === 'GET') {
             return new ApiResult(200, {
               value: await this.entityObject.fetchOneMember({
@@ -112,8 +107,10 @@ export default class EntityObjectQueryHandler implements QueryHandler {
               (
                 await this.entityObject.fetch({
                   include: {
-                  [entityMemberName]: { id: true },
-                }, auth})
+                    [entityMemberName]: { id: true },
+                  },
+                  auth,
+                })
               )[entityMemberName].id,
               this.entitiesData.entities[entityMember.typeName]
             ),

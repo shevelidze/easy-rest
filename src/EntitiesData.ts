@@ -1,7 +1,7 @@
 import { EntityQueryHandler } from './queryHandlers';
-import { EntitesObject } from './Entity';
+import { EntitiesDict } from './Entity';
 
 export default interface EntitiesData {
-  entities: EntitesObject;
+  entities: EntitiesDict;
   entityQueryHandlers: { [key: string]: EntityQueryHandler };
 }

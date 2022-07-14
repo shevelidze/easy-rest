@@ -9,6 +9,7 @@ import {
 } from '../errors';
 import EntityObjectQueryHandler from './EntityObjectQueryHandler';
 import EntityObject from '../EntityObject';
+import { PrimitiveEntityMember } from '../entityMembers';
 
 export default class ArrayQueryHandler implements QueryHandler {
   constructor(arrayObject: ArrayObject, entitesData: EntitiesData) {
@@ -28,7 +29,7 @@ export default class ArrayQueryHandler implements QueryHandler {
       });
     } else if (
       httpMethod === 'GET' &&
-      this.arrayObject.elementEntityMember.isPrimitive &&
+      this.arrayObject.elementEntityMember instanceof PrimitiveEntityMember &&
       query.length === 1
     ) {
       const indexNumber = this.arrayObject.parseIndex(query[0]);
@@ -37,7 +38,9 @@ export default class ArrayQueryHandler implements QueryHandler {
         (await this.arrayObject.fetch({ auth }))[indexNumber]
       );
     } else if (
-      !this.arrayObject.elementEntityMember.isPrimitive &&
+      !(
+        this.arrayObject.elementEntityMember instanceof PrimitiveEntityMember
+      ) &&
       query.length > 0
     ) {
       return new EntityObjectQueryHandler(
@@ -49,7 +52,7 @@ export default class ArrayQueryHandler implements QueryHandler {
       );
     } else if (
       (httpMethod === 'DELETE' || httpMethod === 'PUT') &&
-      this.arrayObject.elementEntityMember.isPrimitive &&
+      this.arrayObject.elementEntityMember instanceof PrimitiveEntityMember &&
       query.length === 1
     ) {
       if (!this.arrayObject.entityMember.isVariable)

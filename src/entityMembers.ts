@@ -1,66 +1,87 @@
-export class EntityMember {
-  constructor(typeName: string, isPrimitive: boolean) {
+import { type SchemaFormType } from 'jtd';
+
+class EntityMember {
+  constructor(typeName: string) {
     this.typeName = typeName;
-    this.isPrimitive = isPrimitive;
   }
 
-  excludeFromLight(): EntityMember {
+  excludedFromLight(): EntityMember {
     this.isExcludedFromLight = true;
     return this;
   }
 
+  requiredForCreation(): EntityMember {
+    this.isRequiredForCreation = true;
+    return this;
+  }
+
   isExcludedFromLight: boolean = false;
-  isVariable: boolean = false;
+  isRequiredForCreation: boolean = false;
   typeName: string;
-  isPrimitive: boolean;
 }
 
-export class PrimitiveEntityMember extends EntityMember {
-  constructor(typeName: 'string' | 'number' | 'array' | 'boolean') {
-    super(typeName, true);
-  }
-  allowVariation(): EntityMember {
+export class VariableEntityMember extends EntityMember {
+  variable(): EntityMember {
     this.isVariable = true;
     return this;
   }
+  isVariable: boolean = false;
 }
 
-export class EntityEntityMember extends EntityMember {
+export class PrimitiveEntityMember extends VariableEntityMember {
+  constructor(typeName, schema: SchemaFormType) {
+    super(typeName);
+    this.schema = schema;
+  }
+  schema: SchemaFormType;
+}
+
+export class ComplexEntityMemberBlueprint extends EntityMember {
   constructor(typeName: string) {
-    super(typeName, false);
+    super(typeName);
   }
 }
 
-export class ArrayEntityMember extends PrimitiveEntityMember {
-  constructor(elementEntityMember: EntityMember) {
+export class ArrayEntityMemberBlueprint extends VariableEntityMember {
+  constructor(
+    elementEntityMember:
+      | PrimitiveEntityMember
+      | ComplexEntityMemberBlueprint
+      | ArrayEntityMemberBlueprint
+  ) {
     super('array');
     this.elementEntityMember = elementEntityMember;
     this.isExcludedFromLight = elementEntityMember.isExcludedFromLight;
   }
-  useLightElements(): ArrayEntityMember {
+  lightElements(): ArrayEntityMemberBlueprint {
     this.isUsingLightElements = true;
     return this;
   }
-  elementEntityMember: EntityMember;
+  elementEntityMember:
+    | PrimitiveEntityMember
+    | ComplexEntityMemberBlueprint
+    | ArrayEntityMemberBlueprint;
   isUsingLightElements: boolean = false;
 }
 
 export function string(): PrimitiveEntityMember {
-  return new PrimitiveEntityMember('string');
+  return new PrimitiveEntityMember('string', { type: 'string' });
 }
 
 export function number(): PrimitiveEntityMember {
-  return new PrimitiveEntityMember('number');
+  return new PrimitiveEntityMember('number', { type: 'int32' });
 }
 
 export function boolean(): PrimitiveEntityMember {
-  return new PrimitiveEntityMember('number');
+  return new PrimitiveEntityMember('boolean', { type: 'boolean' });
 }
 
-export function array(elementEntityMember: EntityMember): ArrayEntityMember {
-  return new ArrayEntityMember(elementEntityMember);
+export function array(
+  elementEntityMember: EntityMember
+): ArrayEntityMemberBlueprint {
+  return new ArrayEntityMemberBlueprint(elementEntityMember);
 }
 
-export function entity(entityName: string): EntityEntityMember {
-  return new EntityEntityMember(entityName);
+export function entity(entityName: string): ComplexEntityMemberBlueprint {
+  return new ComplexEntityMemberBlueprint(entityName);
 }

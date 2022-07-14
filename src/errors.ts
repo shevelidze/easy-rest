@@ -9,7 +9,7 @@ export class EasyRestError extends Error {
 
 export class MethodNotAllowedError extends EasyRestError {
   constructor(message?: string) {
-    super(message || 'Methods not allowed.', 405);
+    super(message || 'Method not allowed.', 405);
   }
 }
 
@@ -27,9 +27,7 @@ export class BadRequestError extends EasyRestError {
 
 export class InvalidEntityIdError extends NotFoundError {
   constructor(id: string, entityName: string) {
-    super(
-      `Failed to find object with the id ${id} of the entity ${entityName}.`
-    );
+    super(`Failed to find object with id ${id} of the entity ${entityName}.`);
   }
 }
 
@@ -42,7 +40,7 @@ export class InvalidPutUsageError extends MethodNotAllowedError {
 export class EntitiesPrefixMissingError extends NotFoundError {
   constructor() {
     super(
-      '"/entities/" prefix is missing. An each api request path must start with this prefix.'
+      '"/entities/" prefix is missing. Each api request path must start with this prefix.'
     );
   }
 }
@@ -87,7 +85,7 @@ export class InvalidRequestPathError extends NotFoundError {
 export class MemeberOrMethodNotFoundError extends NotFoundError {
   constructor(entityName: string, memberOrMethodName: string) {
     super(
-      `Entity ${entityName} has not member or method member ${memberOrMethodName}.`
+      `Entity ${entityName} has no member or method member ${memberOrMethodName}.`
     );
   }
 }

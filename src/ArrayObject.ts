@@ -1,7 +1,11 @@
 import EntitiesData from './EntitiesData';
 import Entity from './Entity';
-import { DataModifierArgs, Include } from './EntityBlueprint';
-import { ArrayEntityMember } from './entityMembers';
+import { Include } from './EntityBlueprint';
+import { DataModifierArgs } from './dataModifier';
+import {
+  ArrayEntityMemberBlueprint,
+  PrimitiveEntityMember,
+} from './entityMembers';
 import EntityObject from './EntityObject';
 import { IndexIsNaNError, MemeberOrMethodNotFoundError } from './errors';
 
@@ -13,7 +17,9 @@ export default class ArrayObject {
   ) {
     this.entityMemberName = arrayEntityMemberName;
     this.ownerEntityObject = ownerEntityObject;
-    if (!this.entityMember.elementEntityMember.isPrimitive) {
+    if (
+      !(this.entityMember.elementEntityMember instanceof PrimitiveEntityMember)
+    ) {
       this.elementEntity =
         entitiesData.entities[this.entityMember.elementEntityMember.typeName];
     }
@@ -44,9 +50,9 @@ export default class ArrayObject {
     return indexNumber;
   }
   get entityMember() {
-    return this.ownerEntityObject.entity.entityBlueprint.members[
+    return this.ownerEntityObject.entity.members[
       this.entityMemberName
-    ] as ArrayEntityMember;
+    ] as ArrayEntityMemberBlueprint;
   }
   get elementEntityMember() {
     return this.entityMember.elementEntityMember;

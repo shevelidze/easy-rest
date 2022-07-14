@@ -20,7 +20,10 @@ export default class EntityQueryHandler implements QueryHandler {
     if (httpMethod === 'GET' && query.length === 0)
       return new ApiResult(
         200,
-        await this.entity.fetch({ include: this.entity.lightInclude, auth })
+        await await this.entity.fetch({
+          include: this.entity.lightInclude,
+          auth,
+        })
       );
     else if (httpMethod === 'PUT' && query.length === 0) {
       await this.entity.create(body);

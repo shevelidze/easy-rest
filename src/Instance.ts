@@ -1,5 +1,4 @@
-import type EntityBlueprint from './EntityBlueprint';
-import Entity from './Entity';
+import type { BlueprintsDict } from './EntityBlueprint';
 import {
   InitialQueryHandler,
   EntityQueryHandler,
@@ -8,26 +7,19 @@ import {
 } from './queryHandlers';
 import type EntitiesData from './EntitiesData';
 import { MethodNotAllowedError, NotFoundError } from './errors';
+import generateEntities from './generateEntities';
 
 export default class Instance {
-  constructor(entitiesBlueprints: { [key: string]: EntityBlueprint }) {
+  constructor(entitiesBlueprints: BlueprintsDict) {
     this.entitiesData = {
-      entities: {},
+      entities: generateEntities(entitiesBlueprints),
       entityQueryHandlers: {},
     };
 
-    for (const entityName in entitiesBlueprints) {
-      const entity = new Entity(entityName, entitiesBlueprints[entityName]);
-
-      this.entitiesData.entities[entityName] = entity;
-
-      this.entitiesData.entityQueryHandlers[entityName] =
-        new EntityQueryHandler(entity, this.entitiesData);
-    }
-
-    for (const entityName in entitiesBlueprints) {
-      this.entitiesData.entities[entityName].initialize(
-        this.entitiesData.entities
+    for (const entityKey in this.entitiesData.entities) {
+      this.entitiesData.entityQueryHandlers[entityKey] = new EntityQueryHandler(
+        this.entitiesData.entities[entityKey],
+        this.entitiesData
       );
     }
 

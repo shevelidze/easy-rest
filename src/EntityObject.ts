@@ -1,5 +1,6 @@
 import Entity from './Entity';
-import { DataModifierArgs, Include, MutatorArgs } from './EntityBlueprint';
+import { Include, MutatorArgs } from './EntityBlueprint';
+import { DataModifierArgs } from './dataModifier';
 
 export default class EntityObject {
   constructor(id: string, entity: Entity) {
@@ -12,7 +13,7 @@ export default class EntityObject {
   async fetchOneMember(
     args: { memberName: string; memberInclude?: Include } & DataModifierArgs
   ) {
-    if (this.entity.entityBlueprint.members[args.memberName] === undefined)
+    if (this.entity.members[args.memberName] === undefined)
       throw new Error(
         `Entity ${this.entity.name} has no members with name ${args.memberName}.`
       );
