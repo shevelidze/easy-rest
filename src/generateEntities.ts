@@ -16,6 +16,8 @@ export default function generateEntities(
   const creatorSchemas: { [key: string]: SchemaFormProperties } = {};
 
   for (const entityBlueprint of Object.values(blueprints)) {
+    if (entityBlueprint.members === undefined) continue;
+
     if (entityBlueprint.members.id !== undefined)
       throw new Error('id member name is reserved.');
     entityBlueprint.members.id = EasyRest.string();

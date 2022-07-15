@@ -2,6 +2,13 @@ import EasyRest from '../../src';
 import { SchemaFormProperties } from 'jtd';
 
 describe('Instance constructor', () => {
+  test('instance without members', () => {
+    new EasyRest.Instance({
+      entity: {
+        fetcher: async () => {},
+      },
+    });
+  }); 
   test('recognize a creation schema loop', () => {
     expect(() => {
       new EasyRest.Instance({

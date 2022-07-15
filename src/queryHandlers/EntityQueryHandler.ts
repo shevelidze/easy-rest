@@ -27,7 +27,7 @@ export default class EntityQueryHandler implements QueryHandler {
         })
       );
     else if (httpMethod === 'PUT' && query.length === 0) {
-      await this.entity.create(body);
+      await this.entity.create({ auth, newObject: body });
 
       return new ApiResult(201);
     } else {

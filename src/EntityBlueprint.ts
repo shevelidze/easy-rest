@@ -43,6 +43,7 @@ export default interface EntityBlueprint {
   mutator?: Mutator;
   deleter?: Deleter;
   creatorSchema?: SchemaFormProperties;
+  mutatorSchema?: SchemaFormProperties;
 }
 
 export type BlueprintsDict = { [key: string]: EntityBlueprint };

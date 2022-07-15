@@ -37,7 +37,10 @@ export default class EntityObjectQueryHandler implements QueryHandler {
         })
       );
     else if (httpMethod === 'POST' && query.length === 0) {
-      return new ApiResult(200, await this.entityObject.mutate(body));
+      return new ApiResult(
+        200,
+        await this.entityObject.mutate({ auth, mutate: body })
+      );
     } else if (httpMethod === 'DELETE' && query.length === 0) {
       return new ApiResult(200, await this.entityObject.delete({ auth }));
     } else {
