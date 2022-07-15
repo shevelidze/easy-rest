@@ -1,6 +1,6 @@
 {
   "name": "@shevelidze/easyrest",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A library for RESTing without a headache.",
   "directories": {
     "test": "test"
