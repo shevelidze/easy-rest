@@ -41,6 +41,7 @@ export default class Entity {
     name: string,
     entityBlueprint: EntityBlueprint,
     intialCreatorSchema: SchemaFormProperties,
+    mutatorSchema: SchemaFormProperties,
     include: Include,
     lightInclude: Include
   ) {
@@ -76,6 +77,7 @@ export default class Entity {
     } = entityBlueprint.creatorSchema || {};
     Object.assign(this.creatorSchema, restUserCreatorSchema);
     Object.assign(this.creatorSchema.properties, userCreatorSchemaProperties);
+    this.mutatorSchema = mutatorSchema;
   }
 
   name: string;

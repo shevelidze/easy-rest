@@ -129,11 +129,37 @@ export default function generateEntities(
     }
   }
 
+  function getMutatorSchema(blueprintKey: string) {
+    const schema: SchemaFormProperties = { optionalProperties: {} };
+
+    function getMemberSchema(target: EntityMember) {
+      if (target instanceof ArrayEntityMemberBlueprint) {
+        const schema: SchemaFormValues = {
+          values: getMemberSchema(target.elementEntityMember),
+        };
+        return schema;
+      } else if (target instanceof ComplexEntityMemberBlueprint)
+        return getCreatorSchema(target.typeName);
+      else return target.schema;
+    }
+
+    const blueprint = blueprints[blueprintKey];
+
+    for (const key in blueprint.members) {
+      const member = blueprint.members[key];
+      if (!member.isVariable) continue;
+      schema.optionalProperties[key] = getMemberSchema(member);
+    }
+
+    return schema;
+  }
+
   for (const key in blueprints) {
     result[key] = new Entity(
       key,
       blueprints[key],
       getCreatorSchema(key),
+      getMutatorSchema(key),
       getInclude(key, false),
       getInclude(key, true)
     );

@@ -14,21 +14,18 @@ class EntityMember {
     this.isRequiredForCreation = true;
     return this;
   }
-
-  isExcludedFromLight: boolean = false;
-  isRequiredForCreation: boolean = false;
-  typeName: string;
-}
-
-export class VariableEntityMember extends EntityMember {
   variable(): EntityMember {
     this.isVariable = true;
     return this;
   }
+
+  isExcludedFromLight: boolean = false;
+  isRequiredForCreation: boolean = false;
   isVariable: boolean = false;
+  typeName: string;
 }
 
-export class PrimitiveEntityMember extends VariableEntityMember {
+export class PrimitiveEntityMember extends EntityMember {
   constructor(typeName, schema: SchemaFormType) {
     super(typeName);
     this.schema = schema;
@@ -42,7 +39,7 @@ export class ComplexEntityMemberBlueprint extends EntityMember {
   }
 }
 
-export class ArrayEntityMemberBlueprint extends VariableEntityMember {
+export class ArrayEntityMemberBlueprint extends EntityMember {
   constructor(
     elementEntityMember:
       | PrimitiveEntityMember

@@ -3,6 +3,7 @@ import EntityObjectQueryHandler from './EntityObjectQueryHandler';
 import type EntitiesData from '../EntitiesData';
 import InternalEntity from '../Entity';
 import EntityObject from '../EntityObject';
+import { validate } from 'jtd';
 
 export default class EntityQueryHandler implements QueryHandler {
   constructor(entity: InternalEntity, entitesData: EntitiesData) {

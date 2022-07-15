@@ -42,7 +42,7 @@ describe('Instance constructor', () => {
     }).toThrow(/Loop in the entity: user->account->user\./);
   });
 
-  test('build correct creator schema', () => {
+  test('build correct creator and mutator schema', () => {
     const instance = new EasyRest.Instance({
       user: {
         fetcher: async () => {},
@@ -67,7 +67,41 @@ describe('Instance constructor', () => {
       part: {
         fetcher: async () => {},
         members: {
-          name: EasyRest.string().requiredForCreation(),
+          name: EasyRest.string().variable().requiredForCreation(),
+          tag: EasyRest.entity('part_tag').variable(),
+          tags: EasyRest.array(EasyRest.entity('part_tag')).variable(),
+        },
+      },
+      part_tag: {
+        fetcher: async () => {},
+        members: {
+          value: EasyRest.number().requiredForCreation(),
+        },
+      },
+    });
+
+    expect(
+      instance.entitiesData.entities.part.mutatorSchema
+    ).toStrictEqual<SchemaFormProperties>({
+      optionalProperties: {
+        name: {
+          type: 'string',
+        },
+        tag: {
+          properties: {
+            value: {
+              type: 'int32',
+            },
+          },
+        },
+        tags: {
+          values: {
+            properties: {
+              value: {
+                type: 'int32',
+              },
+            },
+          },
         },
       },
     });
