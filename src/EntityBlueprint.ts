@@ -11,9 +11,7 @@ export interface Include {
   [key: string]: Include | boolean;
 }
 
-export interface Mutate {
-  [key: string]: any;
-}
+export type Mutate = any;
 
 export type CreatorArgs = { newObject: any } & DataModifierArgs;
 export type Creator = (args: CreatorArgs) => Promise<void>;

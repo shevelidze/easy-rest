@@ -105,7 +105,19 @@ export class IndexIsNaNError extends NotFoundError {
 }
 
 export class InvalidMethodArguments extends BadRequestError {
-  constructor(methodName: string) {
-    super(`Invalid method arguments for the method ${methodName}.`);
+  constructor() {
+    super('Invalid method arguments.');
+  }
+}
+
+export class InvalidCreatorArguments extends BadRequestError {
+  constructor() {
+    super('Invalid creator arguments.');
+  }
+}
+
+export class InvalidMutatorArguments extends BadRequestError {
+  constructor() {
+    super('Invalid mutator arguments.');
   }
 }

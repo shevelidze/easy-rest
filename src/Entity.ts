@@ -1,4 +1,4 @@
-import { SchemaFormProperties, isValidSchema } from 'jtd';
+import { SchemaFormProperties, isValidSchema, validate } from 'jtd';
 import type {
   Fetcher,
   Mutator,
@@ -13,6 +13,8 @@ import {
   NoCreatorFunctionProvidedError,
   NoMutatorFunctionProvidedError,
   NoDeleterFunctionProvidedError,
+  InvalidCreatorArguments,
+  InvalidMutatorArguments,
 } from './errors';
 
 function generateMethods(
@@ -52,7 +54,12 @@ export default class Entity {
 
     this.fetch = entityBlueprint.fetcher;
     this.create =
-      entityBlueprint.creator ||
+      ((args) => {
+        if (validate(this.creatorSchema, args.newObject).length > 0)
+          throw new InvalidCreatorArguments();
+
+        return entityBlueprint.creator(args);
+      }) ||
       (async () => {
         throw new NoCreatorFunctionProvidedError(name);
       });
@@ -62,7 +69,12 @@ export default class Entity {
         throw new NoDeleterFunctionProvidedError(name);
       });
     this.mutate =
-      entityBlueprint.mutator ||
+      ((args) => {
+        if (validate(this.mutatorSchema, args.mutate).length > 0)
+          throw new InvalidMutatorArguments();
+
+        return entityBlueprint.mutator(args);
+      }) ||
       (async () => {
         throw new NoMutatorFunctionProvidedError(name);
       });

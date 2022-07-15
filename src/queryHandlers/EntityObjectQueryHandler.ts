@@ -11,7 +11,10 @@ import type EntitiesData from '../EntitiesData';
 import EntityObject from '../EntityObject';
 import ArrayQueryHandler from './ArrayQueryHandler';
 import ArrayObject from '../ArrayObject';
-import { ArrayEntityMemberBlueprint, PrimitiveEntityMember } from '../entityMembers';
+import {
+  ArrayEntityMemberBlueprint,
+  PrimitiveEntityMember,
+} from '../entityMembers';
 
 export default class EntityObjectQueryHandler implements QueryHandler {
   constructor(entityObject: EntityObject, entitiesData: EntitiesData) {
@@ -48,11 +51,11 @@ export default class EntityObjectQueryHandler implements QueryHandler {
 
         const method = this.entityObject.entity.methods[query[0]];
 
-        if (method.argumentsJtdSchema !== undefined) {
-          const validationResult = validate(method.argumentsJtdSchema, body);
-          if (validationResult.length > 0)
-            throw new InvalidMethodArguments(query[0]);
-        }
+        if (
+          method.argumentsJtdSchema !== undefined &&
+          validate(method.argumentsJtdSchema, body).length > 0
+        )
+          throw new InvalidMethodArguments();
 
         const methodResult = await method.func({
           id: this.entityObject.id,
@@ -66,16 +69,15 @@ export default class EntityObjectQueryHandler implements QueryHandler {
         const entityMember = this.entityObject.entity.members[entityMemberName];
 
         if (entityMember instanceof ArrayEntityMemberBlueprint) {
-            return new ArrayQueryHandler(
-              new ArrayObject(
-                entityMemberName,
-                this.entityObject,
-                this.entitiesData
-              ),
+          return new ArrayQueryHandler(
+            new ArrayObject(
+              entityMemberName,
+              this.entityObject,
               this.entitiesData
-            );
-        }
-        else if (entityMember instanceof PrimitiveEntityMember) {
+            ),
+            this.entitiesData
+          );
+        } else if (entityMember instanceof PrimitiveEntityMember) {
           if (query.length > 1) throw new InvalidRequestPathError();
           else if (httpMethod === 'GET') {
             return new ApiResult(200, {
@@ -91,9 +93,7 @@ export default class EntityObjectQueryHandler implements QueryHandler {
                 entityMemberName
               );
 
-            //todo: add validation
-            await this.entityObject.entity.mutate({
-              id: this.entityObject.id,
+            await this.entityObject.mutate({
               mutate: body,
               auth,
             });
