@@ -1,5 +1,5 @@
-import * as ta from './testAssets';
-import EasyRest from '../src';
+import * as ta from '../testAssets';
+import EasyRest from '../../src';
 
 afterEach(ta.resetDicts);
 
