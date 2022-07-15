@@ -5,6 +5,25 @@ describe('Instance constructor', () => {
   test('recognize a creation schema loop', () => {
     expect(() => {
       new EasyRest.Instance({
+        post: {
+          fetcher: async () => {},
+          members: {
+            name: EasyRest.string().requiredForCreation(),
+            likes: EasyRest.array(
+              EasyRest.entity('like')
+            ).requiredForCreation(),
+          },
+        },
+        like: {
+          fetcher: async () => {},
+          members: {
+            post: EasyRest.entity('post').requiredForCreation(),
+          },
+        },
+      });
+    }).toThrow(/Loop in the entity: post->like->post\./);
+    expect(() => {
+      new EasyRest.Instance({
         user: {
           fetcher: async () => {},
           members: {
@@ -39,6 +58,18 @@ describe('Instance constructor', () => {
           user: EasyRest.entity('user').requiredForCreation(),
         },
       },
+      machine: {
+        fetcher: async () => {},
+        members: {
+          parts: EasyRest.array(EasyRest.entity('part')).requiredForCreation(),
+        },
+      },
+      part: {
+        fetcher: async () => {},
+        members: {
+          name: EasyRest.string().requiredForCreation(),
+        },
+      },
     });
 
     expect(instance.entitiesData.entities.user.creatorSchema).toStrictEqual({
@@ -57,6 +88,22 @@ describe('Instance constructor', () => {
           properties: {
             name: {
               type: 'string',
+            },
+          },
+        },
+      },
+    });
+
+    expect(
+      instance.entitiesData.entities.machine.creatorSchema
+    ).toStrictEqual<SchemaFormProperties>({
+      properties: {
+        parts: {
+          values: {
+            properties: {
+              name: {
+                type: 'string',
+              },
             },
           },
         },

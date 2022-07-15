@@ -36,7 +36,9 @@ describe('Entites validation', () => {
     expect(() => {
       new EasyRest.Instance({
         entity1: {
-          members: {},
+          members: {
+            a: EasyRest.entity('entity2'),
+          },
           methods: {},
           fetcher: async () => null,
         },

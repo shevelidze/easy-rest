@@ -123,13 +123,16 @@ export default function generateEntities(
   for (const key in blueprints) {
     const blueprint = blueprints[key];
     for (const memberKey in blueprint.members) {
-      if (!(blueprint.members[memberKey] instanceof PrimitiveEntityMember))
+      if (!(blueprint.members[memberKey] instanceof PrimitiveEntityMember)) {
         validateMemberBlueprint(blueprint.members[memberKey]);
+      }
     }
+  }
 
+  for (const key in blueprints) {
     result[key] = new Entity(
       key,
-      blueprint,
+      blueprints[key],
       getCreatorSchema(key),
       getInclude(key, false),
       getInclude(key, true)
