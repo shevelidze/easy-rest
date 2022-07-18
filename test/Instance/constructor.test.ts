@@ -194,4 +194,84 @@ describe('Instance constructor', () => {
       },
     });
   });
+
+  test('build correct include', () => {
+    const easyRest1 = new EasyRest.Instance({
+      user: {
+        fetcher: async () => {},
+        members: {
+          first_name: EasyRest.string().excludedFromLight(),
+          last_name: EasyRest.string().excludedFromLight(),
+          email: EasyRest.string(),
+          posts: EasyRest.entity('post').excludedFromLight(),
+        },
+      },
+      post: {
+        fetcher: async () => {},
+        members: {
+          content: EasyRest.string().excludedFromLight().requiredForCreation(),
+          creation_timestamp: EasyRest.number().excludedFromLight(),
+          likes: EasyRest.number().excludedFromLight(),
+          views: EasyRest.number().excludedFromLight(),
+          is_liked: EasyRest.boolean().variable().excludedFromLight(),
+          user: EasyRest.entity('user').excludedFromLight(),
+        },
+      },
+    });
+
+    expect(easyRest1.entitiesData.entities.post.include).toStrictEqual({
+      id: true,
+      content: true,
+      creation_timestamp: true,
+      likes: true,
+      views: true,
+      is_liked: true,
+      user: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+      },
+    });
+
+    const easyRest2 = new EasyRest.Instance({
+      user: {
+        fetcher: async () => {},
+        members: {
+          first_name: EasyRest.string().excludedFromLight(),
+          last_name: EasyRest.string().excludedFromLight(),
+          email: EasyRest.string(),
+          posts: EasyRest.array(EasyRest.entity('post'))
+            .lightElements()
+            .excludedFromLight(),
+        },
+      },
+      post: {
+        fetcher: async () => {},
+        members: {
+          content: EasyRest.string().excludedFromLight().requiredForCreation(),
+          creation_timestamp: EasyRest.number().excludedFromLight(),
+          likes: EasyRest.number().excludedFromLight(),
+          views: EasyRest.number().excludedFromLight(),
+          is_liked: EasyRest.boolean().variable().excludedFromLight(),
+          user: EasyRest.entity('user').excludedFromLight(),
+        },
+      },
+    });
+
+    expect(easyRest2.entitiesData.entities.post.include).toStrictEqual({
+      id: true,
+      content: true,
+      creation_timestamp: true,
+      likes: true,
+      views: true,
+      is_liked: true,
+      user: {
+        id: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+      },
+    });
+  });
 });

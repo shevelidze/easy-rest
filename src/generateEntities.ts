@@ -8,11 +8,7 @@ import {
   PrimitiveEntityMember,
 } from './entityMembers';
 
-export default function generateEntities(
-  blueprints: BlueprintsDict
-): EntitiesDict {
-  const includes: { [key: string]: Include } = {};
-  const lightIncludes: { [key: string]: Include } = {};
+export default function generateEntities(blueprints: BlueprintsDict): EntitiesDict {
   const creatorSchemas: { [key: string]: SchemaFormProperties } = {};
 
   for (const entityBlueprint of Object.values(blueprints)) {
@@ -28,25 +24,25 @@ export default function generateEntities(
     light: boolean,
     calls: string[] = []
   ) {
-    const internalIncludes = light ? lightIncludes : includes;
-    if (internalIncludes[blueprintKey] !== undefined)
-      return internalIncludes[blueprintKey];
-
     calls.push(blueprintKey);
 
     const blueprint = blueprints[blueprintKey];
-    internalIncludes[blueprintKey] = {};
-    const include = internalIncludes[blueprintKey];
+    const include = {};
 
     function getMemberArrayInclude(member: ArrayEntityMemberBlueprint) {
-      return member.elementEntityMember instanceof ArrayEntityMemberBlueprint
-        ? getMemberArrayInclude(member.elementEntityMember)
-        : member.elementEntityMember instanceof ComplexEntityMemberBlueprint
-        ? getInclude(
-            member.elementEntityMember.typeName,
-            member.isUsingLightElements || light
-          )
-        : !member.elementEntityMember.isExcludedFromLight;
+      if (member.elementEntityMember instanceof ArrayEntityMemberBlueprint)
+        return getMemberArrayInclude(member.elementEntityMember);
+
+      if (member.elementEntityMember instanceof ComplexEntityMemberBlueprint) {
+        if (calls.includes(member.elementEntityMember.typeName)) return;
+        return getInclude(
+          member.elementEntityMember.typeName,
+          member.isUsingLightElements || light,
+          calls
+        );
+      }
+
+      return !(member.elementEntityMember.isExcludedFromLight && light);
     }
 
     for (const memberKey in blueprint.members) {
@@ -60,9 +56,10 @@ export default function generateEntities(
       if (member instanceof ComplexEntityMemberBlueprint) {
         if (calls.includes(member.typeName)) continue;
         include[memberKey] = getInclude(member.typeName, light, calls);
-      } else if (member instanceof ArrayEntityMemberBlueprint)
-        include[memberKey] = getMemberArrayInclude(member);
-      else include[memberKey] = true;
+      } else if (member instanceof ArrayEntityMemberBlueprint) {
+        const arrayInclude = getMemberArrayInclude(member);
+        if (arrayInclude !== undefined) include[memberKey] = arrayInclude;
+      } else include[memberKey] = true;
     }
 
     calls.pop();
