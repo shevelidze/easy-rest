@@ -81,3 +81,91 @@ If not, it will return an instance of [EasyRest.ApiResult](#api-result), which c
 - get all objects of the entity: `GET /entities/worker` &rarr; `[{id: "1", name: "John"... }, {id: "2", name: "Victor"...}]`
 - get an object by id: `GET /entities/animal/12` &rarr; `{id: "12", name: "Lucky", type: {id: "2", name: "Dog"}}`
 - get only one member of an object: `GET /entities/animal/12/type` &rarr; `{id: 2, name: "Dog"}`
+
+## Documentation
+
+### Entity blueprints
+
+When you are creationg an EasyRest instance you have to provide an entity blueprints object, in which the key is the name of the entity, and the value is an entity blueprint.
+
+```ts
+interface EntityBlueprint {
+  members?: EntityBlueprint,
+  fetcher: Fetcher,
+  creator: Creator,
+  mutator: Mutator,
+  deleter: Deleter
+}
+```
+
+### Fetcher
+
+A function, which will be called on every request, when it's neccessary. Accepts one object as an argument, and returns a promise with the array of entity objects.
+
+```ts
+interface FetcherArgs {
+  ids: string[],
+  include: Include
+  auth: any
+}
+
+type Fetcher = (args: FetcherArgs) => Promise<any>;
+```
+
+`include` - it's a special object, which tells, which entity members are neccessary to include to the final promise. Each object property is either another `include`, in a case, when the member isn't a primitive, or a boolean and tells include or not appropriate member. 
+
+```ts
+interface Include {
+  [key: string]: Include | boolean;
+}
+```
+
+`ids` - an array of object identificators.
+
+### Creator
+
+**TODO: Add creator description**
+
+### Mutator
+
+A function for changing objects. Is optional in a blueprint. If there is no mutator provided, [processQuery](#process-query) with return an appropriate error to a mutate attempt.
+
+**TODO: Add mutate property description**
+
+```ts
+interface MutatorArgs {
+  id: string,
+  mutate: Mutate
+  auth: any
+}
+
+type Mutator = (args: MutatorArgs) => Promise<void>;
+```
+
+### Deleter
+
+A function for deleting objects.
+
+```ts
+interface DeleterArgs {
+  id: string
+  auth: any
+}
+
+type Deleter = (args: DeleterArgs) => Primise<void>;
+```
+
+## Reference
+
+### Instance
+An EasyRest instance class.
+
+```ts
+constructor(memberBlueprints)
+```
+
+Properties:
+
+| Name | Type | Description |
+| --- | --- | --- |
+| `processQuery` | `() => Promise<ApiResult>` | The main method, which precesses queries, calls appropriate functions and returns `ApiResult` promise. |
